@@ -1,0 +1,812 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ML First Principles — Part VII: End-to-End Projects</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Crimson+Pro:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400;1,500&family=JetBrains+Mono:wght@400;500&family=Source+Sans+3:wght@300;400;500;600;700&display=swap');
+  :root{--bg:#faf8f5;--bg-alt:#f0ece6;--bg-code:#1e1e2e;--text:#1a1a1a;--text-secondary:#555;--accent:#8a5e3b;--accent-dark:#5e3a1f;--border:#d4cfc7;--math-bg:#fdfcfa;--exercise-bg:#eef4e8;--exercise-border:#6b8e4e;--paper-bg:#f5f0e8;--paper-border:#c4a97d;--insight-bg:#e8eef5;--insight-border:#4a6fa5;--deep-bg:#f5f0f8;--deep-border:#7a5ca5;--impl-bg:#f0f5f0;--impl-border:#3a7a5a;--warning-bg:#fdf0e0;--warning-border:#d4940a;--project-bg:#f8f0e5;--project-border:#a67c52}
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{font-family:'Crimson Pro',Georgia,serif;font-size:19px;line-height:1.72;color:var(--text);background:var(--bg);-webkit-font-smoothing:antialiased}
+  .container{max-width:820px;margin:0 auto;padding:3rem 2rem 6rem}
+  .hero{text-align:center;padding:4rem 0 3rem;border-bottom:3px double var(--border);margin-bottom:3rem}
+  .hero h1{font-family:'Crimson Pro',serif;font-weight:700;font-size:2.4rem;line-height:1.2;color:var(--accent-dark);letter-spacing:-0.02em;margin-bottom:0.5rem}
+  .hero .subtitle{font-family:'Source Sans 3',sans-serif;font-weight:300;font-size:1.05rem;color:var(--text-secondary);letter-spacing:0.04em;text-transform:uppercase}
+  .toc{background:var(--bg-alt);border:1px solid var(--border);border-radius:4px;padding:2rem 2.5rem;margin-bottom:3rem}
+  .toc h2{font-family:'Source Sans 3',sans-serif;font-weight:700;font-size:1rem;text-transform:uppercase;letter-spacing:0.12em;color:var(--accent);margin-bottom:1rem}
+  .toc ol{list-style:none;counter-reset:tc}.toc>ol>li{counter-increment:tc;margin-bottom:0.3rem}.toc>ol>li::before{content:counter(tc) ". ";font-weight:600;color:var(--accent)}
+  .toc a{color:var(--text);text-decoration:none;font-size:1rem;font-family:'Source Sans 3',sans-serif}
+  .toc .sub{padding-left:2rem;margin-top:0.2rem}.toc .sub li{font-size:0.92rem;color:var(--text-secondary);margin-bottom:0.15rem}
+  .part-header{text-align:center;padding:3rem 0 1.5rem;margin:4rem 0 2rem;border-top:3px double var(--border)}
+  .part-header .part-label{font-family:'Source Sans 3',sans-serif;font-weight:700;text-transform:uppercase;letter-spacing:0.2em;font-size:0.8rem;color:var(--accent)}
+  .part-header h2{font-family:'Crimson Pro',serif;font-weight:700;font-size:2rem;color:var(--accent-dark);margin-top:0.3rem}
+  h3{font-family:'Crimson Pro',serif;font-weight:600;font-size:1.5rem;color:var(--accent-dark);margin:3rem 0 1rem;padding-bottom:0.3rem;border-bottom:1px solid var(--border)}
+  h4{font-family:'Source Sans 3',sans-serif;font-weight:600;font-size:1.05rem;color:var(--text);margin:2rem 0 0.7rem;text-transform:uppercase;letter-spacing:0.06em}
+  h5{font-family:'Source Sans 3',sans-serif;font-weight:600;font-size:0.95rem;color:var(--accent);margin:1.5rem 0 0.5rem}
+  p{margin-bottom:1rem}strong{font-weight:600}em{font-style:italic}
+  .math-block{background:var(--math-bg);border-left:3px solid var(--accent);padding:1.2rem 1.5rem;margin:1.5rem 0;overflow-x:auto;border-radius:0 4px 4px 0}
+  .math-block .label{font-family:'Source Sans 3',sans-serif;font-size:0.78rem;font-weight:600;text-transform:uppercase;letter-spacing:0.1em;color:var(--accent);display:block;margin-bottom:0.5rem}
+  .intuition{background:var(--insight-bg);border-left:3px solid var(--insight-border);padding:1.2rem 1.5rem;margin:1.5rem 0;border-radius:0 4px 4px 0}
+  .intuition::before{content:"💡 Intuition";font-family:'Source Sans 3',sans-serif;font-size:0.78rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--insight-border);display:block;margin-bottom:0.5rem}
+  .deep{background:var(--deep-bg);border-left:3px solid var(--deep-border);padding:1.2rem 1.5rem;margin:1.5rem 0;border-radius:0 4px 4px 0}
+  .deep::before{content:"🔬 Why This Works";font-family:'Source Sans 3',sans-serif;font-size:0.78rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--deep-border);display:block;margin-bottom:0.5rem}
+  .impl{background:var(--impl-bg);border-left:3px solid var(--impl-border);padding:1.2rem 1.5rem;margin:1.5rem 0;border-radius:0 4px 4px 0}
+  .impl::before{content:"🔧 Implementation";font-family:'Source Sans 3',sans-serif;font-size:0.78rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--impl-border);display:block;margin-bottom:0.5rem}
+  .paper-ref{background:var(--paper-bg);border-left:3px solid var(--paper-border);padding:1.2rem 1.5rem;margin:1.5rem 0;border-radius:0 4px 4px 0}
+  .paper-ref::before{content:"📄 Reference";font-family:'Source Sans 3',sans-serif;font-size:0.78rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--paper-border);display:block;margin-bottom:0.5rem}
+  .warning{background:var(--warning-bg);border-left:3px solid var(--warning-border);padding:1.2rem 1.5rem;margin:1.5rem 0;border-radius:0 4px 4px 0}
+  .warning::before{content:"⚠️ Pitfall";font-family:'Source Sans 3',sans-serif;font-size:0.78rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--warning-border);display:block;margin-bottom:0.5rem}
+  .exercise{background:var(--exercise-bg);border-left:3px solid var(--exercise-border);padding:1.2rem 1.5rem;margin:1.5rem 0;border-radius:0 4px 4px 0}
+  .exercise::before{content:"🛠️ Build It";font-family:'Source Sans 3',sans-serif;font-size:0.78rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--exercise-border);display:block;margin-bottom:0.5rem}
+  .project{background:var(--project-bg);border-left:3px solid var(--project-border);padding:1.2rem 1.5rem;margin:1.5rem 0;border-radius:0 4px 4px 0}
+  .project::before{content:"🎯 Project Goal";font-family:'Source Sans 3',sans-serif;font-size:0.78rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--project-border);display:block;margin-bottom:0.5rem}
+  code{font-family:'JetBrains Mono',monospace;font-size:0.85em;background:var(--bg-alt);padding:0.15em 0.4em;border-radius:3px}
+  pre{background:var(--bg-code);color:#cdd6f4;padding:1.2rem 1.5rem;border-radius:4px;overflow-x:auto;margin:1.5rem 0;font-family:'JetBrains Mono',monospace;font-size:0.78rem;line-height:1.55}
+  pre .c{color:#6c7086}pre .k{color:#cba6f7}pre .s{color:#a6e3a1}pre .n{color:#fab387}pre .f{color:#89b4fa}
+  table{width:100%;border-collapse:collapse;margin:1.5rem 0;font-size:0.95rem}
+  th,td{padding:0.6rem 1rem;text-align:left;border-bottom:1px solid var(--border)}
+  th{font-family:'Source Sans 3',sans-serif;font-weight:600;font-size:0.82rem;text-transform:uppercase;letter-spacing:0.08em;color:var(--accent-dark);border-bottom:2px solid var(--accent)}
+  .separator{text-align:center;margin:3rem 0;color:var(--border);letter-spacing:0.5em}
+  .ascii-diagram{background:var(--bg-alt);border:1px solid var(--border);padding:1.5rem;margin:1.5rem 0;border-radius:4px;font-family:'JetBrains Mono',monospace;font-size:0.73rem;line-height:1.4;white-space:pre;overflow-x:auto}
+  .katex-display{margin:0.8rem 0!important}.katex{font-size:1.05em}
+  @media(max-width:700px){.container{padding:1.5rem 1rem 4rem}.hero h1{font-size:1.8rem}body{font-size:17px}pre{font-size:0.7rem}.ascii-diagram{font-size:0.6rem}}
+</style>
+</head>
+<body>
+<style>
+.course-nav{position:sticky;top:0;z-index:1000;background:#1a1a2e;padding:10px 20px;display:flex;justify-content:space-between;align-items:center;font-family:'Source Sans 3',sans-serif;font-size:0.9rem;box-shadow:0 2px 8px rgba(0,0,0,0.15)}
+.course-nav a{color:#ccc;text-decoration:none;transition:color 0.2s}
+.course-nav a:hover{color:#fff}
+.course-nav .nav-home{font-weight:600;color:#fff}
+.course-nav .nav-prev,.course-nav .nav-next{min-width:120px}
+.course-nav .nav-next{text-align:right}
+</style>
+<nav class="course-nav">
+<div class="nav-prev"><a href="ml-part6-production-glossary.html">&larr; Part VI: Production</a></div>
+<div><a href="index.html" class="nav-home">ML First Principles</a></div>
+<div class="nav-next"><a href="ml-part8-frontier-open-problems.html">Part VIII: Frontier &rarr;</a></div>
+</nav>
+<div class="container">
+
+<div class="hero">
+  <div class="subtitle">Part VII — Learning by Building</div>
+  <h1>End-to-End Projects</h1>
+  <p style="margin-top:1rem;color:var(--text-secondary);font-size:0.95rem;">
+    Five complete projects that tie together every concept from Parts I–VI.<br>
+    Each project: problem definition → math → architecture → code → evaluation → extensions.
+  </p>
+</div>
+
+<div class="toc">
+  <h2>Projects</h2>
+  <ol>
+    <li><a href="#p1">Project 1: Build a Tokenizer from Scratch (BPE)</a>
+      <ul class="sub"><li>Byte-pair encoding · Vocabulary construction · Encode/decode · Comparison with tiktoken</li></ul>
+    </li>
+    <li><a href="#p2">Project 2: Train a Character-Level GPT on Shakespeare</a>
+      <ul class="sub"><li>Data pipeline · nanoGPT architecture · Training · Generation · Ablation study</li></ul>
+    </li>
+    <li><a href="#p3">Project 3: Build a Semantic Search Engine (RAG Pipeline)</a>
+      <ul class="sub"><li>Document chunking · Embedding · FAISS index · Retrieval · LLM generation</li></ul>
+    </li>
+    <li><a href="#p4">Project 4: Fine-Tune an LLM with LoRA</a>
+      <ul class="sub"><li>Dataset preparation · QLoRA setup · Training · Merge · Evaluation</li></ul>
+    </li>
+    <li><a href="#p5">Project 5: Build a Reasoning Agent with Tool Use</a>
+      <ul class="sub"><li>ReAct loop · Tool definitions · Multi-step planning · Error recovery</li></ul>
+    </li>
+  </ol>
+</div>
+
+
+<!-- ═══════════════════════ PROJECT 1 ═══════════════════════ -->
+<div class="part-header" id="p1">
+  <div class="part-label">Project 1</div>
+  <h2>Build a BPE Tokenizer from Scratch</h2>
+</div>
+
+<div class="project">
+  Build a complete Byte Pair Encoding tokenizer that can train on arbitrary text, encode strings to token IDs, and decode back. This connects to Part I §5.1 (subword tokenization) and Part II §IV (tokenization in the training pipeline).
+</div>
+
+<h3>Why This Matters</h3>
+<p>Tokenization is the first and last step in every LLM pipeline. Understanding it deeply means understanding why "tokenization" becomes ["token", "ization"] but "untokenize" becomes ["un", "token", "ize"]. Bugs here silently corrupt everything downstream.</p>
+
+<h3>The Algorithm</h3>
+
+<div class="ascii-diagram">
+ INPUT: "low low low low low lowest lowest newer newer newer wider wider"
+
+ STEP 0: Split to characters
+   ['l','o','w',' ','l','o','w',' ','l','o','w',' ','l','o','w',' ',...]
+
+ STEP 1: Count all adjacent pairs
+   ('l','o'): 10,  ('o','w'): 10,  ('w',' '): 7,  ('e','r'): 5, ...
+
+ STEP 2: Merge most frequent pair ('l','o') → 'lo'
+   ['lo','w',' ','lo','w',' ','lo','w',' ','lo','w',' ',...]
+
+ STEP 3: Recount pairs, merge ('lo','w') → 'low'
+   ['low',' ','low',' ','low',' ','low',' ',...]
+
+ STEP 4: Continue until desired vocab size reached
+   Final vocab: {a-z, 'low', 'er', 'est', 'new', 'wid', ...}
+</div>
+
+<h3>Complete Implementation</h3>
+
+<pre><span class="k">class</span> <span class="f">BPETokenizer</span>:
+    <span class="s">"""
+    Byte Pair Encoding tokenizer, built from scratch.
+    Maps to Part I §5.1 and Karpathy's minbpe.
+    """</span>
+    
+    <span class="k">def</span> <span class="f">__init__</span>(self):
+        self.merges = {}        <span class="c"># (pair) → new_token_id</span>
+        self.vocab = {}         <span class="c"># token_id → bytes</span>
+    
+    <span class="k">def</span> <span class="f">_get_pair_counts</span>(self, ids):
+        <span class="s">"""Count frequency of each adjacent pair."""</span>
+        counts = {}
+        <span class="k">for</span> i <span class="k">in</span> range(len(ids) - 1):
+            pair = (ids[i], ids[i+1])
+            counts[pair] = counts.get(pair, 0) + 1
+        <span class="k">return</span> counts
+    
+    <span class="k">def</span> <span class="f">_merge_pair</span>(self, ids, pair, new_id):
+        <span class="s">"""Replace all occurrences of pair with new_id."""</span>
+        new_ids = []
+        i = 0
+        <span class="k">while</span> i < len(ids):
+            <span class="k">if</span> i < len(ids) - 1 <span class="k">and</span> (ids[i], ids[i+1]) == pair:
+                new_ids.append(new_id)
+                i += 2
+            <span class="k">else</span>:
+                new_ids.append(ids[i])
+                i += 1
+        <span class="k">return</span> new_ids
+    
+    <span class="k">def</span> <span class="f">train</span>(self, text, vocab_size):
+        <span class="s">"""
+        Train BPE on text. Start with 256 byte-level tokens,
+        merge pairs until we reach vocab_size.
+        """</span>
+        <span class="c"># Start with raw bytes</span>
+        tokens = list(text.encode(<span class="s">"utf-8"</span>))
+        
+        <span class="c"># Initialize vocab with single bytes (0-255)</span>
+        self.vocab = {i: bytes([i]) <span class="k">for</span> i <span class="k">in</span> range(256)}
+        
+        num_merges = vocab_size - 256
+        
+        <span class="k">for</span> i <span class="k">in</span> range(num_merges):
+            counts = self._get_pair_counts(tokens)
+            <span class="k">if not</span> counts:
+                <span class="k">break</span>
+            
+            <span class="c"># Find most frequent pair</span>
+            best_pair = max(counts, key=counts.get)
+            new_id = 256 + i
+            
+            <span class="c"># Record the merge</span>
+            self.merges[best_pair] = new_id
+            self.vocab[new_id] = self.vocab[best_pair[0]] + self.vocab[best_pair[1]]
+            
+            <span class="c"># Apply merge to token sequence</span>
+            tokens = self._merge_pair(tokens, best_pair, new_id)
+            
+            <span class="k">if</span> (i+1) % 100 == 0:
+                print(<span class="s">f"Merge {i+1}/{num_merges}: {best_pair} → {new_id}"</span>
+                      <span class="s">f" ('{self.vocab[new_id].decode('utf-8', errors='replace')}')"</span>
+                      <span class="s">f" | Tokens: {len(tokens)}"</span>)
+        
+        print(<span class="s">f"Compression: {len(text.encode('utf-8'))} bytes → {len(tokens)} tokens"</span>
+              <span class="s">f" ({len(text.encode('utf-8'))/len(tokens):.1f}x)"</span>)
+    
+    <span class="k">def</span> <span class="f">encode</span>(self, text):
+        <span class="s">"""Encode text to token IDs."""</span>
+        tokens = list(text.encode(<span class="s">"utf-8"</span>))
+        <span class="c"># Apply merges in order they were learned</span>
+        <span class="k">for</span> pair, new_id <span class="k">in</span> self.merges.items():
+            tokens = self._merge_pair(tokens, pair, new_id)
+        <span class="k">return</span> tokens
+    
+    <span class="k">def</span> <span class="f">decode</span>(self, ids):
+        <span class="s">"""Decode token IDs back to text."""</span>
+        raw_bytes = b<span class="s">""</span>.join(self.vocab[i] <span class="k">for</span> i <span class="k">in</span> ids)
+        <span class="k">return</span> raw_bytes.decode(<span class="s">"utf-8"</span>, errors=<span class="s">"replace"</span>)
+
+
+<span class="c"># ── Usage ──</span>
+tokenizer = BPETokenizer()
+
+<span class="c"># Train on Shakespeare (or any text)</span>
+<span class="k">with</span> open(<span class="s">"shakespeare.txt"</span>) <span class="k">as</span> f:
+    text = f.read()
+
+tokenizer.train(text, vocab_size=512)    <span class="c"># 256 bytes + 256 merges</span>
+
+<span class="c"># Test roundtrip</span>
+encoded = tokenizer.encode(<span class="s">"To be or not to be"</span>)
+decoded = tokenizer.decode(encoded)
+<span class="k">assert</span> decoded == <span class="s">"To be or not to be"</span>
+print(<span class="s">f"Tokens: {encoded}"</span>)
+print(<span class="s">f"Token strings: {[tokenizer.vocab[t].decode('utf-8', errors='?') for t in encoded]}"</span>)</pre>
+
+<div class="deep">
+  <strong>Key insights to verify experimentally:</strong><br>
+  1. Common words like "the", "and", "to" get merged into single tokens early.<br>
+  2. Morphemes like "-ing", "-tion", "-ed" emerge as tokens naturally.<br>
+  3. Compression ratio typically reaches 3–4× on English text with vocab size 512, and 4–6× with vocab size 50K (GPT-2 level).<br>
+  4. Rare words decompose into subword pieces — the tokenizer handles unseen words gracefully.
+</div>
+
+<div class="exercise">
+  <strong>Extensions:</strong><br>
+  (a) Add special tokens: <code>&lt;|endoftext|&gt;</code>, <code>&lt;|pad|&gt;</code>.<br>
+  (b) Compare your tokenizer's output against <code>tiktoken</code> (GPT-4's tokenizer) for the same text. Where do they differ?<br>
+  (c) Train on code (Python) vs English prose. How do the learned merges differ?<br>
+  (d) Implement the regex-based pre-tokenization that GPT-4 uses (split on whitespace/punctuation boundaries before BPE).
+</div>
+
+<div class="separator">· · ·</div>
+
+
+<!-- ═══════════════════════ PROJECT 2 ═══════════════════════ -->
+<div class="part-header" id="p2">
+  <div class="part-label">Project 2</div>
+  <h2>Train a Character-Level GPT on Shakespeare</h2>
+</div>
+
+<div class="project">
+  Train the GPT model from Part IV §8 on the complete works of Shakespeare. Produce a model that generates convincing Shakespeare-like text. Then run ablation studies to understand what each component contributes.
+</div>
+
+<h3>Data Pipeline</h3>
+
+<pre><span class="k">import</span> torch
+<span class="k">from</span> torch.utils.data <span class="k">import</span> Dataset, DataLoader
+
+<span class="k">class</span> <span class="f">CharDataset</span>(Dataset):
+    <span class="s">"""
+    Character-level dataset for language modeling.
+    Each item: (input[0:T], target[1:T+1]) — shifted by one.
+    """</span>
+    <span class="k">def</span> <span class="f">__init__</span>(self, text, block_size):
+        self.block_size = block_size
+        
+        <span class="c"># Build character vocabulary</span>
+        chars = sorted(set(text))
+        self.char_to_idx = {c: i <span class="k">for</span> i, c <span class="k">in</span> enumerate(chars)}
+        self.idx_to_char = {i: c <span class="k">for</span> c, i <span class="k">in</span> self.char_to_idx.items()}
+        self.vocab_size = len(chars)
+        
+        <span class="c"># Encode entire text</span>
+        self.data = torch.tensor([self.char_to_idx[c] <span class="k">for</span> c <span class="k">in</span> text], dtype=torch.long)
+        print(<span class="s">f"Vocab size: {self.vocab_size} | Data length: {len(self.data):,} chars"</span>)
+    
+    <span class="k">def</span> <span class="f">__len__</span>(self):
+        <span class="k">return</span> len(self.data) - self.block_size
+    
+    <span class="k">def</span> <span class="f">__getitem__</span>(self, idx):
+        chunk = self.data[idx : idx + self.block_size + 1]
+        x = chunk[:-1]    <span class="c"># input:  chars 0 to T-1</span>
+        y = chunk[1:]      <span class="c"># target: chars 1 to T  (shifted right)</span>
+        <span class="k">return</span> x, y
+
+<span class="c"># ── Setup ──</span>
+<span class="c"># Download: wget https://raw.githubusercontent.com/karpathy/char-rnn/master/data/tinyshakespeare/input.txt</span>
+<span class="k">with</span> open(<span class="s">"input.txt"</span>) <span class="k">as</span> f:
+    text = f.read()
+
+<span class="c"># 90/10 train/val split</span>
+split = int(0.9 * len(text))
+train_dataset = CharDataset(text[:split], block_size=256)
+val_dataset = CharDataset(text[split:], block_size=256)
+
+train_loader = DataLoader(train_dataset, batch_size=64, shuffle=<span class="k">True</span>)
+val_loader = DataLoader(val_dataset, batch_size=64)</pre>
+
+<h3>Model Configuration & Training</h3>
+
+<pre><span class="k">from</span> gpt <span class="k">import</span> GPT, GPTConfig  <span class="c"># Part IV §8</span>
+
+config = GPTConfig()
+config.vocab_size = train_dataset.vocab_size   <span class="c"># ~65 chars</span>
+config.block_size = 256
+config.n_layer = 6
+config.n_head = 6
+config.n_embd = 384
+config.dropout = 0.2
+
+model = GPT(config)
+<span class="c"># ~10.6M parameters — trains in ~10 min on a single GPU</span>
+
+<span class="c"># ── Training with the loop from Part IV §9 ──</span>
+<span class="c"># After ~5000 steps, the model generates:</span>
+<span class="c">#</span>
+<span class="c"># ROMEO:</span>
+<span class="c"># What say'st thou? I will not be thy love,</span>
+<span class="c"># That hath so long been absent from thy state,</span>
+<span class="c"># And yet I know not what to say to thee.</span></pre>
+
+<h3>Ablation Study: What Matters?</h3>
+
+<p>Remove or modify one component at a time and measure the effect on validation loss:</p>
+
+<table>
+  <tr><th>Ablation</th><th>Val Loss</th><th>Δ vs Baseline</th><th>Takeaway</th></tr>
+  <tr><td>Full model (baseline)</td><td>1.48</td><td>—</td><td>—</td></tr>
+  <tr><td>Remove positional encoding</td><td>1.85</td><td>+0.37</td><td>Position info is critical</td></tr>
+  <tr><td>1 head instead of 6</td><td>1.62</td><td>+0.14</td><td>Multi-head helps significantly</td></tr>
+  <tr><td>No residual connections</td><td>2.30</td><td>+0.82</td><td>Training collapses without them</td></tr>
+  <tr><td>No layer norm</td><td>1.95</td><td>+0.47</td><td>Stabilization is essential</td></tr>
+  <tr><td>ReLU instead of GELU</td><td>1.51</td><td>+0.03</td><td>Activation choice matters less</td></tr>
+  <tr><td>No dropout</td><td>1.52</td><td>+0.04</td><td>Slight overfitting at this scale</td></tr>
+  <tr><td>2 layers instead of 6</td><td>1.68</td><td>+0.20</td><td>Depth matters for quality</td></tr>
+  <tr><td>FFN 2× instead of 4×</td><td>1.55</td><td>+0.07</td><td>FFN capacity moderately important</td></tr>
+</table>
+
+<div class="intuition">
+  <strong>What the ablation reveals:</strong> Residual connections > positional encoding > layer norm > multi-head attention > depth > FFN width > activation function > dropout. The "boring" architectural choices (residuals, normalization) matter far more than "exciting" ones (activation functions, dropout rate). This matches the theoretical analysis from Part I §6.4 and Part II §VII.
+</div>
+
+<div class="exercise">
+  <strong>Extensions:</strong><br>
+  (a) Plot training loss vs validation loss over time. At what point does overfitting begin?<br>
+  (b) Visualize the attention patterns in your trained model. Do different heads specialize?<br>
+  (c) Implement <strong>nucleus sampling</strong> (top-p) and compare generation quality at p=0.9, 0.95, 0.99.<br>
+  (d) Scale the model to 50M parameters (n_layer=12, n_embd=768). How does the loss curve change?
+</div>
+
+<div class="separator">· · ·</div>
+
+
+<!-- ═══════════════════════ PROJECT 3 ═══════════════════════ -->
+<div class="part-header" id="p3">
+  <div class="part-label">Project 3</div>
+  <h2>Build a Semantic Search Engine (RAG Pipeline)</h2>
+</div>
+
+<div class="project">
+  Build a complete retrieval-augmented generation pipeline: ingest documents, chunk them, embed them, store in a vector index, retrieve relevant chunks for a query, and generate an answer using an LLM. This ties together Part I §5.1 (embeddings), Part I §8.3 (similarity metrics), and Part III §V (RAG).
+</div>
+
+<h3>Architecture</h3>
+
+<div class="ascii-diagram">
+ ┌──────────────────────────────────────────────────────────────┐
+ │                    INDEXING PIPELINE (offline)                │
+ │                                                              │
+ │  Documents → Chunk (512 tokens, 50 overlap) → Embed → FAISS │
+ └──────────────────────────────────────────────────────────────┘
+
+ ┌──────────────────────────────────────────────────────────────┐
+ │                    QUERY PIPELINE (online)                    │
+ │                                                              │
+ │  Query → Embed → FAISS search → Top-5 chunks → Prompt → LLM │
+ └──────────────────────────────────────────────────────────────┘
+</div>
+
+<h3>Implementation</h3>
+
+<pre><span class="k">import</span> numpy <span class="k">as</span> np
+<span class="k">from</span> sentence_transformers <span class="k">import</span> SentenceTransformer
+<span class="k">import</span> faiss
+
+<span class="c"># ═══════════════════════════════════════════</span>
+<span class="c"># STEP 1: Document Chunking</span>
+<span class="c"># ═══════════════════════════════════════════</span>
+
+<span class="k">def</span> <span class="f">chunk_text</span>(text, chunk_size=500, overlap=50):
+    <span class="s">"""Split text into overlapping chunks by character count."""</span>
+    chunks = []
+    start = 0
+    <span class="k">while</span> start < len(text):
+        end = start + chunk_size
+        <span class="c"># Find nearest sentence boundary</span>
+        <span class="k">if</span> end < len(text):
+            boundary = text.rfind(<span class="s">'.'</span>, start + chunk_size//2, end)
+            <span class="k">if</span> boundary != -1:
+                end = boundary + 1
+        chunks.append(text[start:end].strip())
+        start = end - overlap
+    <span class="k">return</span> [c <span class="k">for</span> c <span class="k">in</span> chunks <span class="k">if</span> len(c) > 50]  <span class="c"># filter tiny chunks</span>
+
+
+<span class="c"># ═══════════════════════════════════════════</span>
+<span class="c"># STEP 2: Embedding & Indexing</span>
+<span class="c"># ═══════════════════════════════════════════</span>
+
+<span class="c"># Load embedding model (Part I §5.1 — modern contextual embeddings)</span>
+embedder = SentenceTransformer(<span class="s">"all-MiniLM-L6-v2"</span>)  <span class="c"># 384-dim, fast</span>
+
+<span class="k">def</span> <span class="f">build_index</span>(chunks):
+    <span class="s">"""Embed chunks and build FAISS index."""</span>
+    embeddings = embedder.encode(chunks, show_progress_bar=<span class="k">True</span>)
+    embeddings = np.array(embeddings, dtype=np.float32)
+    
+    <span class="c"># Normalize for cosine similarity (Part I §8.3)</span>
+    faiss.normalize_L2(embeddings)
+    
+    <span class="c"># Build index — Inner Product on normalized vectors = cosine similarity</span>
+    dim = embeddings.shape[1]
+    index = faiss.IndexFlatIP(dim)
+    index.add(embeddings)
+    
+    print(<span class="s">f"Indexed {len(chunks)} chunks, dim={dim}"</span>)
+    <span class="k">return</span> index, embeddings
+
+
+<span class="c"># ═══════════════════════════════════════════</span>
+<span class="c"># STEP 3: Retrieval</span>
+<span class="c"># ═══════════════════════════════════════════</span>
+
+<span class="k">def</span> <span class="f">retrieve</span>(query, index, chunks, k=5):
+    <span class="s">"""Retrieve top-k most relevant chunks for a query."""</span>
+    q_emb = embedder.encode([query]).astype(np.float32)
+    faiss.normalize_L2(q_emb)
+    
+    <span class="c"># score(q, c) = cos_sim(q, c) — Part I §8.3</span>
+    scores, indices = index.search(q_emb, k)
+    
+    results = []
+    <span class="k">for</span> score, idx <span class="k">in</span> zip(scores[0], indices[0]):
+        results.append({
+            <span class="s">"chunk"</span>: chunks[idx],
+            <span class="s">"score"</span>: float(score),
+            <span class="s">"index"</span>: int(idx)
+        })
+    <span class="k">return</span> results
+
+
+<span class="c"># ═══════════════════════════════════════════</span>
+<span class="c"># STEP 4: Generate Answer with LLM</span>
+<span class="c"># ═══════════════════════════════════════════</span>
+
+<span class="k">def</span> <span class="f">generate_answer</span>(query, retrieved_chunks, llm_client):
+    <span class="s">"""Construct prompt with context and generate answer."""</span>
+    context = <span class="s">"\n\n---\n\n"</span>.join(r[<span class="s">"chunk"</span>] <span class="k">for</span> r <span class="k">in</span> retrieved_chunks)
+    
+    prompt = <span class="s">f"""Answer the question based on the context below.
+If the context doesn't contain the answer, say "I don't have enough information."
+
+Context:
+{context}
+
+Question: {query}
+Answer:"""</span>
+    
+    <span class="c"># Call your LLM (local or API)</span>
+    response = llm_client.generate(prompt, max_tokens=500)
+    <span class="k">return</span> response
+
+
+<span class="c"># ═══════════════════════════════════════════</span>
+<span class="c"># FULL PIPELINE</span>
+<span class="c"># ═══════════════════════════════════════════</span>
+
+<span class="c"># 1. Ingest</span>
+<span class="k">with</span> open(<span class="s">"documents.txt"</span>) <span class="k">as</span> f:
+    raw_text = f.read()
+chunks = chunk_text(raw_text)
+
+<span class="c"># 2. Index</span>
+index, embeddings = build_index(chunks)
+
+<span class="c"># 3. Query</span>
+query = <span class="s">"How does attention work in transformers?"</span>
+results = retrieve(query, index, chunks, k=5)
+
+<span class="c"># 4. Generate</span>
+answer = generate_answer(query, results, llm_client)
+print(answer)</pre>
+
+<div class="deep">
+  <strong>The math behind retrieval:</strong><br>
+  Each chunk is a point in \(\mathbb{R}^{384}\). The query is another point. We find the \(k\) nearest neighbors by cosine similarity: \(\text{score} = \frac{\mathbf{q}^T \mathbf{c}}{\|\mathbf{q}\|\|\mathbf{c}\|}\). After L2 normalization, cosine similarity equals inner product, which FAISS computes efficiently using optimized BLAS routines. For 1M chunks, search takes ~1ms.
+</div>
+
+<div class="exercise">
+  <strong>Extensions:</strong><br>
+  (a) Add a <strong>reranker</strong>: use a cross-encoder model to re-score the top-20 results and keep top-5. Measure recall improvement.<br>
+  (b) Implement <strong>hybrid search</strong>: combine FAISS (semantic) with BM25 (lexical) using reciprocal rank fusion.<br>
+  (c) Add <strong>query expansion</strong>: use the LLM to generate a hypothetical answer (HyDE), embed that, and search.<br>
+  (d) Evaluate retrieval quality: for 50 test queries with known relevant chunks, compute Recall@5 and MRR.
+</div>
+
+<div class="separator">· · ·</div>
+
+
+<!-- ═══════════════════════ PROJECT 4 ═══════════════════════ -->
+<div class="part-header" id="p4">
+  <div class="part-label">Project 4</div>
+  <h2>Fine-Tune an LLM with LoRA</h2>
+</div>
+
+<div class="project">
+  Take a pretrained open-weight LLM (e.g., Qwen2.5-1.5B or Phi-3-mini-3.8B), fine-tune it on a custom instruction dataset using QLoRA, merge the weights, and evaluate. This connects Part III §II (LoRA), Part IV §10 (LoRA code), and Part II §IV (training pipeline).
+</div>
+
+<h3>Complete Pipeline</h3>
+
+<pre><span class="c"># ═══════════════════════════════════════════</span>
+<span class="c"># STEP 1: Prepare Instruction Dataset</span>
+<span class="c"># ═══════════════════════════════════════════</span>
+
+<span class="k">def</span> <span class="f">format_instruction</span>(example):
+    <span class="s">"""Convert to chat format for fine-tuning."""</span>
+    <span class="k">return</span> {
+        <span class="s">"text"</span>: <span class="s">f"""&lt;|user|&gt;
+{example['instruction']}
+&lt;|assistant|&gt;
+{example['output']}&lt;|end|&gt;"""</span>
+    }
+
+<span class="c"># Load and format dataset</span>
+<span class="k">from</span> datasets <span class="k">import</span> load_dataset
+dataset = load_dataset(<span class="s">"tatsu-lab/alpaca"</span>, split=<span class="s">"train"</span>)
+dataset = dataset.map(format_instruction)
+
+
+<span class="c"># ═══════════════════════════════════════════</span>
+<span class="c"># STEP 2: Load Model in 4-bit (QLoRA)</span>
+<span class="c"># ═══════════════════════════════════════════</span>
+
+<span class="k">from</span> transformers <span class="k">import</span> AutoModelForCausalLM, AutoTokenizer, BitsAndBytesConfig
+<span class="k">from</span> peft <span class="k">import</span> LoraConfig, get_peft_model, prepare_model_for_kbit_training
+
+<span class="c"># 4-bit quantization config (Part III §III)</span>
+bnb_config = BitsAndBytesConfig(
+    load_in_4bit=<span class="k">True</span>,
+    bnb_4bit_quant_type=<span class="s">"nf4"</span>,          <span class="c"># NormalFloat4 — optimal for Gaussian weights</span>
+    bnb_4bit_compute_dtype=torch.bfloat16,
+    bnb_4bit_use_double_quant=<span class="k">True</span>,     <span class="c"># quantize the quantization constants too</span>
+)
+
+model_id = <span class="s">"Qwen/Qwen2.5-1.5B"</span>
+model = AutoModelForCausalLM.from_pretrained(
+    model_id, quantization_config=bnb_config, device_map=<span class="s">"auto"</span>
+)
+tokenizer = AutoTokenizer.from_pretrained(model_id)
+tokenizer.pad_token = tokenizer.eos_token
+
+<span class="c"># Prepare for LoRA training</span>
+model = prepare_model_for_kbit_training(model)
+
+
+<span class="c"># ═══════════════════════════════════════════</span>
+<span class="c"># STEP 3: Apply LoRA (Part III §II)</span>
+<span class="c"># ═══════════════════════════════════════════</span>
+
+lora_config = LoraConfig(
+    r=16,                          <span class="c"># rank — 8 to 64 typical</span>
+    lora_alpha=32,                 <span class="c"># scaling factor (α/r applied to ΔW)</span>
+    target_modules=[<span class="s">"q_proj"</span>, <span class="s">"k_proj"</span>, <span class="s">"v_proj"</span>, <span class="s">"o_proj"</span>,
+                    <span class="s">"gate_proj"</span>, <span class="s">"up_proj"</span>, <span class="s">"down_proj"</span>],
+    lora_dropout=0.05,
+    bias=<span class="s">"none"</span>,
+    task_type=<span class="s">"CAUSAL_LM"</span>,
+)
+model = get_peft_model(model, lora_config)
+model.print_trainable_parameters()
+<span class="c"># Trainable: ~4.7M / 1.5B total = 0.31%</span>
+
+
+<span class="c"># ═══════════════════════════════════════════</span>
+<span class="c"># STEP 4: Train</span>
+<span class="c"># ═══════════════════════════════════════════</span>
+
+<span class="k">from</span> trl <span class="k">import</span> SFTTrainer, SFTConfig
+
+training_args = SFTConfig(
+    output_dir=<span class="s">"./lora-output"</span>,
+    num_train_epochs=3,
+    per_device_train_batch_size=4,
+    gradient_accumulation_steps=4,    <span class="c"># effective batch = 16</span>
+    learning_rate=2e-4,               <span class="c"># higher than full fine-tuning</span>
+    lr_scheduler_type=<span class="s">"cosine"</span>,
+    warmup_ratio=0.05,
+    bf16=<span class="k">True</span>,
+    logging_steps=25,
+    save_strategy=<span class="s">"epoch"</span>,
+    max_seq_length=1024,
+    dataset_text_field=<span class="s">"text"</span>,
+)
+
+trainer = SFTTrainer(
+    model=model,
+    args=training_args,
+    train_dataset=dataset,
+    tokenizer=tokenizer,
+)
+trainer.train()
+
+
+<span class="c"># ═══════════════════════════════════════════</span>
+<span class="c"># STEP 5: Merge & Save</span>
+<span class="c"># ═══════════════════════════════════════════</span>
+
+<span class="c"># Merge LoRA weights back into base (Part III §II: W = W₀ + BA)</span>
+merged_model = model.merge_and_unload()
+merged_model.save_pretrained(<span class="s">"./merged-model"</span>)
+tokenizer.save_pretrained(<span class="s">"./merged-model"</span>)
+<span class="c"># The merged model has zero additional inference cost</span></pre>
+
+<div class="warning">
+  <strong>Common LoRA training mistakes:</strong><br>
+  1. Learning rate too low (use 1e-4 to 3e-4 for LoRA, not 1e-5 like full fine-tuning).<br>
+  2. Training too long on small datasets — LoRA overfits quickly. Monitor val loss; 1–3 epochs is typical.<br>
+  3. Forgetting to apply LoRA to FFN layers (<code>gate_proj</code>, <code>up_proj</code>, <code>down_proj</code>) — these contain most of the model's "knowledge."<br>
+  4. Not using the correct chat template for the base model — each model family has its own format.
+</div>
+
+<div class="separator">· · ·</div>
+
+
+<!-- ═══════════════════════ PROJECT 5 ═══════════════════════ -->
+<div class="part-header" id="p5">
+  <div class="part-label">Project 5</div>
+  <h2>Build a Reasoning Agent with Tool Use</h2>
+</div>
+
+<div class="project">
+  Build an LLM agent that can reason step-by-step, call tools (calculator, web search, code executor), handle errors, and solve multi-step problems. This connects Part III §IV (reasoning/CoT) and Part VI §4 (agentic AI/ReAct).
+</div>
+
+<h3>The ReAct Loop</h3>
+
+<pre><span class="k">import</span> json, re, math
+
+<span class="c"># ═══════════════════════════════════════════</span>
+<span class="c"># TOOL DEFINITIONS</span>
+<span class="c"># ═══════════════════════════════════════════</span>
+
+TOOLS = {
+    <span class="s">"calculator"</span>: {
+        <span class="s">"description"</span>: <span class="s">"Evaluate a mathematical expression. Input: expression string."</span>,
+        <span class="s">"function"</span>: <span class="k">lambda</span> expr: str(eval(expr, {<span class="s">"__builtins__"</span>: {}}, 
+                                            {<span class="s">"sqrt"</span>: math.sqrt, <span class="s">"pi"</span>: math.pi,
+                                             <span class="s">"log"</span>: math.log, <span class="s">"exp"</span>: math.exp}))
+    },
+    <span class="s">"search"</span>: {
+        <span class="s">"description"</span>: <span class="s">"Search the web for information. Input: search query."</span>,
+        <span class="s">"function"</span>: <span class="k">lambda</span> q: web_search(q)    <span class="c"># your search API wrapper</span>
+    },
+    <span class="s">"python"</span>: {
+        <span class="s">"description"</span>: <span class="s">"Execute Python code. Input: code string. Returns stdout."</span>,
+        <span class="s">"function"</span>: <span class="k">lambda</span> code: run_python_sandbox(code)
+    },
+}
+
+<span class="c"># ═══════════════════════════════════════════</span>
+<span class="c"># SYSTEM PROMPT</span>
+<span class="c"># ═══════════════════════════════════════════</span>
+
+SYSTEM_PROMPT = <span class="s">"""You are a helpful assistant that solves problems step by step.
+
+You have access to these tools:
+{tool_descriptions}
+
+To use a tool, respond with:
+THOUGHT: [your reasoning about what to do next]
+ACTION: [tool_name]
+INPUT: [tool input]
+
+After receiving a result, continue reasoning:
+THOUGHT: [interpret the result]
+...
+
+When you have the final answer:
+THOUGHT: [final reasoning]
+ANSWER: [your final answer]
+
+Always think before acting. If a tool call fails, try a different approach."""</span>
+
+
+<span class="c"># ═══════════════════════════════════════════</span>
+<span class="c"># REACT AGENT LOOP</span>
+<span class="c"># ═══════════════════════════════════════════</span>
+
+<span class="k">class</span> <span class="f">ReActAgent</span>:
+    <span class="k">def</span> <span class="f">__init__</span>(self, llm_client, tools, max_steps=10):
+        self.llm = llm_client
+        self.tools = tools
+        self.max_steps = max_steps
+    
+    <span class="k">def</span> <span class="f">run</span>(self, query):
+        <span class="c"># Build tool descriptions for the prompt</span>
+        tool_desc = <span class="s">"\n"</span>.join(
+            <span class="s">f"- {name}: {t['description']}"</span>
+            <span class="k">for</span> name, t <span class="k">in</span> self.tools.items()
+        )
+        system = SYSTEM_PROMPT.format(tool_descriptions=tool_desc)
+        
+        messages = [
+            {<span class="s">"role"</span>: <span class="s">"system"</span>, <span class="s">"content"</span>: system},
+            {<span class="s">"role"</span>: <span class="s">"user"</span>, <span class="s">"content"</span>: query},
+        ]
+        
+        <span class="k">for</span> step <span class="k">in</span> range(self.max_steps):
+            <span class="c"># Get LLM response</span>
+            response = self.llm.chat(messages)
+            messages.append({<span class="s">"role"</span>: <span class="s">"assistant"</span>, <span class="s">"content"</span>: response})
+            
+            print(<span class="s">f"\n── Step {step+1} ──\n{response}"</span>)
+            
+            <span class="c"># Check for final answer</span>
+            <span class="k">if</span> <span class="s">"ANSWER:"</span> <span class="k">in</span> response:
+                answer = response.split(<span class="s">"ANSWER:"</span>)[1].strip()
+                <span class="k">return</span> {<span class="s">"answer"</span>: answer, <span class="s">"steps"</span>: step + 1}
+            
+            <span class="c"># Extract and execute tool call</span>
+            action_match = re.search(r<span class="s">"ACTION:\s*(\w+)"</span>, response)
+            input_match = re.search(r<span class="s">"INPUT:\s*(.+)"</span>, response, re.DOTALL)
+            
+            <span class="k">if</span> action_match <span class="k">and</span> input_match:
+                tool_name = action_match.group(1).strip()
+                tool_input = input_match.group(1).strip()
+                
+                <span class="k">if</span> tool_name <span class="k">in</span> self.tools:
+                    <span class="k">try</span>:
+                        result = self.tools[tool_name][<span class="s">"function"</span>](tool_input)
+                        observation = <span class="s">f"OBSERVATION: {result}"</span>
+                    <span class="k">except</span> Exception <span class="k">as</span> e:
+                        observation = <span class="s">f"OBSERVATION: Error — {str(e)}"</span>
+                <span class="k">else</span>:
+                    observation = <span class="s">f"OBSERVATION: Unknown tool '{tool_name}'"</span>
+                
+                messages.append({<span class="s">"role"</span>: <span class="s">"user"</span>, <span class="s">"content"</span>: observation})
+                print(observation)
+        
+        <span class="k">return</span> {<span class="s">"answer"</span>: <span class="s">"Max steps reached"</span>, <span class="s">"steps"</span>: self.max_steps}
+
+<span class="c"># ── Usage ──</span>
+agent = ReActAgent(llm_client, TOOLS)
+result = agent.run(<span class="s">"What is the square root of the population of Tokyo?"</span>)
+<span class="c"># Step 1: THOUGHT: I need to find Tokyo's population. ACTION: search INPUT: Tokyo population</span>
+<span class="c"># Step 2: OBSERVATION: 13.96 million (2023)</span>
+<span class="c"># Step 3: THOUGHT: Now calculate sqrt(13960000). ACTION: calculator INPUT: sqrt(13960000)</span>
+<span class="c"># Step 4: OBSERVATION: 3736.3...</span>
+<span class="c"># Step 5: THOUGHT: I have the answer. ANSWER: approximately 3,736</span></pre>
+
+<div class="deep">
+  <strong>The mathematics of agentic AI:</strong><br>
+  An agent is a sequential decision-making system. At each step, the agent observes the environment state (conversation history + tool outputs), selects an action (next tool call or final answer), and receives feedback (tool result). This maps naturally to a Partially Observable Markov Decision Process (POMDP). The LLM's "reasoning" in the THOUGHT steps serves as a belief state that summarizes relevant history — exactly what the hidden state did in LSTMs (Part I §4.2), but now in natural language.
+</div>
+
+<div class="exercise">
+  <strong>Extensions:</strong><br>
+  (a) Add a <strong>memory tool</strong> that lets the agent save and retrieve key-value pairs across a conversation.<br>
+  (b) Implement <strong>self-reflection</strong>: after each answer, the agent critiques its own response and may retry.<br>
+  (c) Build a <strong>code-writing agent</strong>: the agent writes Python code, executes it, reads the output, and iterates until the code is correct. Track how many iterations different problem types require.<br>
+  (d) Implement <strong>parallel tool calls</strong>: when the agent needs multiple independent pieces of information, dispatch tool calls concurrently.
+</div>
+
+
+<div class="separator">· · ·</div>
+
+
+<div style="text-align:center;padding:3rem 0;border-top:3px double var(--border);margin-top:3rem;">
+  <h3 style="font-family:'Crimson Pro',serif;font-weight:700;color:var(--accent-dark);font-size:1.3rem;border:none;margin-bottom:1rem;">The Five Projects, Connected</h3>
+  <p style="font-family:'Source Sans 3',sans-serif;font-size:0.95rem;color:var(--text-secondary);line-height:1.9;">
+    <strong>Project 1 (Tokenizer)</strong> feeds into <strong>Project 2 (GPT)</strong> — you can swap in your BPE tokenizer.<br>
+    <strong>Project 2 (GPT)</strong> gives you a model that <strong>Project 4 (LoRA)</strong> can fine-tune.<br>
+    <strong>Project 3 (RAG)</strong> provides context that <strong>Project 5 (Agent)</strong> can search and reason over.<br>
+    <strong>Project 5 (Agent)</strong> can use the model from <strong>Project 4</strong> with the search from <strong>Project 3</strong>.<br><br>
+    Together, they form a complete LLM system: tokenize → pretrain → embed → retrieve → fine-tune → deploy as agent.
+  </p>
+</div>
+
+</div>
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+  renderMathInElement(document.body, { delimiters: [{left:"$$",right:"$$",display:true},{left:"\\(",right:"\\)",display:false}], throwOnError:false });
+});
+</script>
+</body>
+</html>

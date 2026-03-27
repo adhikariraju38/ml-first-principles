@@ -1,0 +1,1469 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Machine Learning from First Principles to Modern NLP</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Crimson+Pro:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400;1,500&family=JetBrains+Mono:wght@400;500&family=Source+Sans+3:wght@300;400;500;600;700&display=swap');
+
+  :root {
+    --bg: #faf8f5;
+    --bg-alt: #f0ece6;
+    --bg-code: #2b2b2b;
+    --text: #1a1a1a;
+    --text-secondary: #555;
+    --accent: #b44a2f;
+    --accent-light: #e8d5cc;
+    --accent-dark: #8a3520;
+    --border: #d4cfc7;
+    --math-bg: #fdfcfa;
+    --exercise-bg: #eef4e8;
+    --exercise-border: #6b8e4e;
+    --paper-bg: #f5f0e8;
+    --paper-border: #c4a97d;
+    --insight-bg: #e8eef5;
+    --insight-border: #4a6fa5;
+    --warning-bg: #fdf0e0;
+    --warning-border: #d4940a;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Crimson Pro', Georgia, serif;
+    font-size: 19px;
+    line-height: 1.72;
+    color: var(--text);
+    background: var(--bg);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .container {
+    max-width: 820px;
+    margin: 0 auto;
+    padding: 3rem 2rem 6rem;
+  }
+
+  /* ── Header ── */
+  .hero {
+    text-align: center;
+    padding: 4rem 0 3rem;
+    border-bottom: 3px double var(--border);
+    margin-bottom: 3rem;
+  }
+  .hero h1 {
+    font-family: 'Crimson Pro', serif;
+    font-weight: 700;
+    font-size: 2.6rem;
+    line-height: 1.2;
+    color: var(--accent-dark);
+    letter-spacing: -0.02em;
+    margin-bottom: 0.5rem;
+  }
+  .hero .subtitle {
+    font-family: 'Source Sans 3', sans-serif;
+    font-weight: 300;
+    font-size: 1.1rem;
+    color: var(--text-secondary);
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+
+  /* ── Table of contents ── */
+  .toc {
+    background: var(--bg-alt);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 2rem 2.5rem;
+    margin-bottom: 3rem;
+  }
+  .toc h2 {
+    font-family: 'Source Sans 3', sans-serif;
+    font-weight: 700;
+    font-size: 1rem;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--accent);
+    margin-bottom: 1rem;
+  }
+  .toc ol {
+    list-style: none;
+    counter-reset: toc-counter;
+  }
+  .toc > ol > li {
+    counter-increment: toc-counter;
+    margin-bottom: 0.3rem;
+  }
+  .toc > ol > li::before {
+    content: counter(toc-counter, upper-roman) ". ";
+    font-weight: 600;
+    color: var(--accent);
+  }
+  .toc a {
+    color: var(--text);
+    text-decoration: none;
+    border-bottom: 1px solid transparent;
+    font-size: 1rem;
+    font-family: 'Source Sans 3', sans-serif;
+  }
+  .toc a:hover { border-bottom-color: var(--accent); }
+  .toc .sub { padding-left: 2rem; margin-top: 0.2rem; }
+  .toc .sub li { font-size: 0.92rem; color: var(--text-secondary); margin-bottom: 0.15rem; }
+
+  /* ── Part headers ── */
+  .part-header {
+    text-align: center;
+    padding: 3rem 0 1.5rem;
+    margin: 4rem 0 2rem;
+    border-top: 3px double var(--border);
+  }
+  .part-header .part-label {
+    font-family: 'Source Sans 3', sans-serif;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.2em;
+    font-size: 0.8rem;
+    color: var(--accent);
+  }
+  .part-header h2 {
+    font-family: 'Crimson Pro', serif;
+    font-weight: 700;
+    font-size: 2rem;
+    color: var(--accent-dark);
+    margin-top: 0.3rem;
+  }
+
+  /* ── Section headings ── */
+  h3 {
+    font-family: 'Crimson Pro', serif;
+    font-weight: 600;
+    font-size: 1.5rem;
+    color: var(--accent-dark);
+    margin: 3rem 0 1rem;
+    padding-bottom: 0.3rem;
+    border-bottom: 1px solid var(--border);
+  }
+  h4 {
+    font-family: 'Source Sans 3', sans-serif;
+    font-weight: 600;
+    font-size: 1.05rem;
+    color: var(--text);
+    margin: 2rem 0 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+  h5 {
+    font-family: 'Source Sans 3', sans-serif;
+    font-weight: 600;
+    font-size: 0.95rem;
+    color: var(--accent);
+    margin: 1.5rem 0 0.5rem;
+  }
+
+  p { margin-bottom: 1rem; }
+  strong { font-weight: 600; }
+  em { font-style: italic; }
+
+  /* ── Math display ── */
+  .math-block {
+    background: var(--math-bg);
+    border-left: 3px solid var(--accent);
+    padding: 1.2rem 1.5rem;
+    margin: 1.5rem 0;
+    overflow-x: auto;
+    border-radius: 0 4px 4px 0;
+  }
+  .math-block .label {
+    font-family: 'Source Sans 3', sans-serif;
+    font-size: 0.78rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--accent);
+    display: block;
+    margin-bottom: 0.5rem;
+  }
+
+  /* ── Special boxes ── */
+  .intuition {
+    background: var(--insight-bg);
+    border-left: 3px solid var(--insight-border);
+    padding: 1.2rem 1.5rem;
+    margin: 1.5rem 0;
+    border-radius: 0 4px 4px 0;
+  }
+  .intuition::before {
+    content: "💡 Intuition";
+    font-family: 'Source Sans 3', sans-serif;
+    font-size: 0.78rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--insight-border);
+    display: block;
+    margin-bottom: 0.5rem;
+  }
+  .exercise {
+    background: var(--exercise-bg);
+    border-left: 3px solid var(--exercise-border);
+    padding: 1.2rem 1.5rem;
+    margin: 1.5rem 0;
+    border-radius: 0 4px 4px 0;
+  }
+  .exercise::before {
+    content: "✏️ Exercise";
+    font-family: 'Source Sans 3', sans-serif;
+    font-size: 0.78rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--exercise-border);
+    display: block;
+    margin-bottom: 0.5rem;
+  }
+  .paper-ref {
+    background: var(--paper-bg);
+    border-left: 3px solid var(--paper-border);
+    padding: 1.2rem 1.5rem;
+    margin: 1.5rem 0;
+    border-radius: 0 4px 4px 0;
+  }
+  .paper-ref::before {
+    content: "📄 Key Paper";
+    font-family: 'Source Sans 3', sans-serif;
+    font-size: 0.78rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--paper-border);
+    display: block;
+    margin-bottom: 0.5rem;
+  }
+  .warning {
+    background: var(--warning-bg);
+    border-left: 3px solid var(--warning-border);
+    padding: 1.2rem 1.5rem;
+    margin: 1.5rem 0;
+    border-radius: 0 4px 4px 0;
+  }
+  .warning::before {
+    content: "⚠️ Common Mistake";
+    font-family: 'Source Sans 3', sans-serif;
+    font-size: 0.78rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--warning-border);
+    display: block;
+    margin-bottom: 0.5rem;
+  }
+
+  .example {
+    background: #fff;
+    border: 1px solid var(--border);
+    padding: 1.2rem 1.5rem;
+    margin: 1.5rem 0;
+    border-radius: 4px;
+  }
+  .example::before {
+    content: "🔢 Numerical Example";
+    font-family: 'Source Sans 3', sans-serif;
+    font-size: 0.78rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--text-secondary);
+    display: block;
+    margin-bottom: 0.5rem;
+  }
+
+  code {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.85em;
+    background: var(--bg-alt);
+    padding: 0.15em 0.4em;
+    border-radius: 3px;
+  }
+  pre {
+    background: var(--bg-code);
+    color: #e0e0e0;
+    padding: 1.2rem 1.5rem;
+    border-radius: 4px;
+    overflow-x: auto;
+    margin: 1.5rem 0;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.82rem;
+    line-height: 1.55;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 1.5rem 0;
+    font-size: 0.95rem;
+  }
+  th, td {
+    padding: 0.6rem 1rem;
+    text-align: left;
+    border-bottom: 1px solid var(--border);
+  }
+  th {
+    font-family: 'Source Sans 3', sans-serif;
+    font-weight: 600;
+    font-size: 0.82rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--accent-dark);
+    border-bottom: 2px solid var(--accent);
+  }
+
+  .separator {
+    text-align: center;
+    margin: 3rem 0;
+    color: var(--border);
+    letter-spacing: 0.5em;
+  }
+
+  /* ── Collapsible ── */
+  details {
+    margin: 1rem 0;
+  }
+  details summary {
+    cursor: pointer;
+    font-family: 'Source Sans 3', sans-serif;
+    font-weight: 600;
+    color: var(--accent-dark);
+    padding: 0.5rem 0;
+  }
+  details summary:hover { color: var(--accent); }
+
+  .katex-display { margin: 0.8rem 0 !important; }
+  .katex { font-size: 1.05em; }
+
+  @media (max-width: 700px) {
+    .container { padding: 1.5rem 1rem 4rem; }
+    .hero h1 { font-size: 1.8rem; }
+    body { font-size: 17px; }
+  }
+</style>
+</head>
+<body>
+<style>
+.course-nav{position:sticky;top:0;z-index:1000;background:#1a1a2e;padding:10px 20px;display:flex;justify-content:space-between;align-items:center;font-family:'Source Sans 3',sans-serif;font-size:0.9rem;box-shadow:0 2px 8px rgba(0,0,0,0.15)}
+.course-nav a{color:#ccc;text-decoration:none;transition:color 0.2s}
+.course-nav a:hover{color:#fff}
+.course-nav .nav-home{font-weight:600;color:#fff}
+.course-nav .nav-prev,.course-nav .nav-next{min-width:120px}
+.course-nav .nav-next{text-align:right}
+</style>
+<nav class="course-nav">
+<div class="nav-prev"><span></span></div>
+<div><a href="index.html" class="nav-home">ML First Principles</a></div>
+<div class="nav-next"><a href="ml-deep-dives-and-implementation.html">Part II: Deep Dives &rarr;</a></div>
+</nav>
+<div class="container">
+
+<!-- ═══════════════════════════ HERO ═══════════════════════════ -->
+<div class="hero">
+  <div class="subtitle">A Complete Mathematical Journey</div>
+  <h1>Machine Learning from First Principles<br>to Modern NLP</h1>
+  <p style="margin-top:1rem; color:var(--text-secondary); font-size:0.95rem;">
+    From vectors and probabilities through neural networks to transformers and large language models.<br>
+    Every concept built from intuition → derivation → example → application.
+  </p>
+</div>
+
+<!-- ═══════════════════════════ TOC ═══════════════════════════ -->
+<div class="toc">
+  <h2>Contents</h2>
+  <ol>
+    <li><a href="#part1">Mathematical Foundations</a>
+      <ul class="sub">
+        <li>Linear Algebra Essentials · Probability & Statistics · Optimization Basics</li>
+      </ul>
+    </li>
+    <li><a href="#part2">Core Machine Learning</a>
+      <ul class="sub">
+        <li>Linear Regression · Logistic Regression · Loss Functions · Gradient Descent</li>
+      </ul>
+    </li>
+    <li><a href="#part3">Neural Networks</a>
+      <ul class="sub">
+        <li>The Perceptron · Multi-Layer Networks · Backpropagation Derivation · Activation Functions</li>
+      </ul>
+    </li>
+    <li><a href="#part4">Deep Learning Architectures</a>
+      <ul class="sub">
+        <li>CNNs · RNNs & LSTMs · Sequence-to-Sequence Models</li>
+      </ul>
+    </li>
+    <li><a href="#part5">NLP Foundations</a>
+      <ul class="sub">
+        <li>Word Embeddings · Word2Vec Derivation · GloVe · Subword Tokenization</li>
+      </ul>
+    </li>
+    <li><a href="#part6">Attention & Transformers</a>
+      <ul class="sub">
+        <li>Attention Mechanism · Self-Attention · Multi-Head Attention · Full Transformer Architecture</li>
+      </ul>
+    </li>
+    <li><a href="#part7">Modern Large Language Models</a>
+      <ul class="sub">
+        <li>GPT Architecture · Training Objectives · Scaling Laws · MoE & DeepSeek · RLHF</li>
+      </ul>
+    </li>
+    <li><a href="#part8">Pattern Detection — A Unified View</a>
+      <ul class="sub">
+        <li>Geometric Interpretation · Probabilistic Interpretation · How Models "See" Patterns</li>
+      </ul>
+    </li>
+    <li><a href="#reading">Annotated Reading List & Roadmap</a></li>
+  </ol>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     PART I — MATHEMATICAL FOUNDATIONS
+     ═══════════════════════════════════════════════════════════════ -->
+<div class="part-header" id="part1">
+  <div class="part-label">Part I</div>
+  <h2>Mathematical Foundations</h2>
+</div>
+
+<p>
+  We only cover the math you <em>actually need</em>. Three pillars support all of machine learning: linear algebra gives us the language to describe data and transformations; probability gives us the framework to reason under uncertainty; optimization gives us the engine to learn.
+</p>
+
+<!-- ─── 1.1 Linear Algebra ─── -->
+<h3>1.1 &ensp; Linear Algebra Essentials</h3>
+
+<div class="intuition">
+  Think of data as points in space. A single house can be described by its square footage and number of bedrooms — that's a point in 2D space. An image of 784 pixels lives in 784-dimensional space. All of ML is about finding structure (lines, planes, curved surfaces) in these high-dimensional spaces.
+</div>
+
+<h4>Vectors</h4>
+<p>
+  A <strong>vector</strong> \(\mathbf{x} \in \mathbb{R}^n\) is an ordered list of \(n\) numbers. It represents a single data point. For example, a house with 1500 sqft and 3 bedrooms is \(\mathbf{x} = [1500, 3]^T\).
+</p>
+
+<h5>Dot product — the most important operation in ML</h5>
+<p>
+  The dot product of two vectors \(\mathbf{a}, \mathbf{b} \in \mathbb{R}^n\) is:
+</p>
+<div class="math-block">
+  <span class="label">Definition — Dot Product</span>
+  $$\mathbf{a} \cdot \mathbf{b} = \sum_{i=1}^{n} a_i b_i = \|\mathbf{a}\| \|\mathbf{b}\| \cos\theta$$
+</div>
+<p>
+  The first form is <em>algebraic</em>: multiply corresponding elements and sum. The second is <em>geometric</em>: the product of their lengths scaled by the cosine of the angle between them.
+</p>
+<p>
+  <strong>Why this matters everywhere in ML:</strong> The dot product measures <em>similarity</em>. When \(\theta = 0\) (same direction), cosine is 1 and the dot product is maximized. When \(\theta = 90°\) (orthogonal), the dot product is 0. When \(\theta = 180°\) (opposite), it's negative. Attention mechanisms, linear regression, neural network layers — all are built on dot products.
+</p>
+
+<div class="example">
+  Let \(\mathbf{a} = [1, 2, 3]\), \(\mathbf{b} = [4, 5, 6]\).<br>
+  \(\mathbf{a} \cdot \mathbf{b} = 1 \times 4 + 2 \times 5 + 3 \times 6 = 4 + 10 + 18 = 32\).<br>
+  \(\|\mathbf{a}\| = \sqrt{1+4+9} = \sqrt{14} \approx 3.74\), &ensp; \(\|\mathbf{b}\| = \sqrt{16+25+36} = \sqrt{77} \approx 8.77\).<br>
+  \(\cos\theta = 32 / (3.74 \times 8.77) \approx 0.975\) — the vectors are very aligned.
+</div>
+
+<h4>Matrices and Linear Transformations</h4>
+<p>
+  A <strong>matrix</strong> \(\mathbf{W} \in \mathbb{R}^{m \times n}\) transforms a vector from \(\mathbb{R}^n\) to \(\mathbb{R}^m\). Every layer of a neural network does this: \(\mathbf{y} = \mathbf{W}\mathbf{x} + \mathbf{b}\).
+</p>
+<div class="math-block">
+  <span class="label">Matrix-Vector Product</span>
+  $$y_i = \sum_{j=1}^{n} W_{ij} x_j + b_i \qquad \text{for } i = 1, \ldots, m$$
+</div>
+<p>
+  Each row of \(\mathbf{W}\) is a "detector" — its dot product with \(\mathbf{x}\) measures how much \(\mathbf{x}\) matches that pattern. A neural network <em>learns</em> what patterns to detect by adjusting \(\mathbf{W}\).
+</p>
+
+<h4>Key operations summary</h4>
+<table>
+  <tr><th>Operation</th><th>Notation</th><th>ML Role</th></tr>
+  <tr><td>Dot product</td><td>\(\mathbf{a}^T \mathbf{b}\)</td><td>Similarity, attention scores, linear predictions</td></tr>
+  <tr><td>Matrix multiply</td><td>\(\mathbf{W}\mathbf{x}\)</td><td>Linear transformations / neural network layers</td></tr>
+  <tr><td>Transpose</td><td>\(\mathbf{A}^T\)</td><td>Switching rows ↔ columns, computing \(\mathbf{X}^T\mathbf{X}\)</td></tr>
+  <tr><td>Norm</td><td>\(\|\mathbf{x}\| = \sqrt{\sum x_i^2}\)</td><td>Regularization, normalization, distance</td></tr>
+  <tr><td>Outer product</td><td>\(\mathbf{a}\mathbf{b}^T\)</td><td>Rank-1 updates, attention value computation</td></tr>
+</table>
+
+<div class="exercise">
+  <strong>(a)</strong> Given \(\mathbf{w} = [0.5, -1.0]\), \(\mathbf{x}_1 = [4, 2]\), \(\mathbf{x}_2 = [1, 5]\). Compute \(\mathbf{w}^T\mathbf{x}_1\) and \(\mathbf{w}^T\mathbf{x}_2\). Which data point does the weight vector "prefer"?<br>
+  <strong>(b)</strong> Compute the cosine similarity between \(\mathbf{x}_1\) and \(\mathbf{x}_2\). Are they similar or dissimilar?
+</div>
+
+<!-- ─── 1.2 Probability ─── -->
+<h3>1.2 &ensp; Probability & Statistics</h3>
+
+<div class="intuition">
+  ML models live in a world of uncertainty. A spam classifier doesn't say "this IS spam" — it says "the probability of spam is 0.97." Probability gives us the rigorous framework to make and update beliefs under uncertainty.
+</div>
+
+<h4>Bayes' Theorem — The Engine of Inference</h4>
+<div class="math-block">
+  <span class="label">Bayes' Theorem</span>
+  $$P(H \mid D) = \frac{P(D \mid H) \, P(H)}{P(D)}$$
+</div>
+<p>
+  Each term has a name and role:
+</p>
+<table>
+  <tr><th>Term</th><th>Name</th><th>Meaning</th></tr>
+  <tr><td>\(P(H \mid D)\)</td><td>Posterior</td><td>Updated belief about hypothesis \(H\) after seeing data \(D\)</td></tr>
+  <tr><td>\(P(D \mid H)\)</td><td>Likelihood</td><td>How probable the data is if hypothesis \(H\) is true</td></tr>
+  <tr><td>\(P(H)\)</td><td>Prior</td><td>Initial belief before seeing data</td></tr>
+  <tr><td>\(P(D)\)</td><td>Evidence</td><td>Total probability of the data (normalizer)</td></tr>
+</table>
+
+<div class="example">
+  A medical test for a disease is 99% accurate (both sensitivity and specificity). The disease prevalence is 1%. You test positive — what's the probability you actually have the disease?<br><br>
+  \(P(\text{disease} \mid +) = \frac{P(+ \mid \text{disease}) \cdot P(\text{disease})}{P(+)} = \frac{0.99 \times 0.01}{0.99 \times 0.01 + 0.01 \times 0.99} = \frac{0.0099}{0.0198} = 0.5\)<br><br>
+  Only 50%! The low prevalence (prior) dramatically affects the posterior. This is why ML models need to account for class imbalance.
+</div>
+
+<h4>Key Distributions</h4>
+<p><strong>Gaussian (Normal):</strong> \(p(x) = \frac{1}{\sqrt{2\pi}\sigma} \exp\!\left(-\frac{(x - \mu)^2}{2\sigma^2}\right)\). Maximizing the likelihood of Gaussian data leads directly to minimizing squared error — which is why least squares regression is so fundamental.</p>
+
+<p><strong>Bernoulli:</strong> \(P(y=1) = p\), \(P(y=0) = 1-p\). The basis of binary classification. Maximizing Bernoulli likelihood leads to the cross-entropy loss.</p>
+
+<p><strong>Categorical / Softmax:</strong> Generalizes Bernoulli to \(K\) classes. \(P(y = k) = \frac{e^{z_k}}{\sum_{j=1}^{K} e^{z_j}}\). This is the softmax function — it appears in logistic regression, neural network outputs, and attention mechanisms.</p>
+
+<h4>Maximum Likelihood Estimation (MLE)</h4>
+<p>
+  Given data \(\mathcal{D} = \{x_1, \ldots, x_N\}\), find the parameters \(\theta\) that maximize the probability of observing this data:
+</p>
+<div class="math-block">
+  <span class="label">MLE Principle</span>
+  $$\hat{\theta}_{\text{MLE}} = \arg\max_\theta \prod_{i=1}^{N} p(x_i \mid \theta) = \arg\max_\theta \sum_{i=1}^{N} \log p(x_i \mid \theta)$$
+</div>
+<p>
+  We take the log because: (1) products become sums (easier to work with), (2) log is monotonic so the maximum doesn't change, (3) it avoids numerical underflow from multiplying many small probabilities.
+</p>
+
+<div class="intuition">
+  MLE is the unifying principle behind almost all ML training. Linear regression minimizes squared error (= MLE under Gaussian noise). Logistic regression minimizes cross-entropy (= MLE under Bernoulli). Neural network training with cross-entropy loss is also MLE. When you understand MLE, you understand <em>why</em> we use these specific loss functions.
+</div>
+
+<!-- ─── 1.3 Optimization ─── -->
+<h3>1.3 &ensp; Optimization Basics</h3>
+
+<div class="intuition">
+  Imagine you're blindfolded on a hilly landscape, and you want to find the lowest valley. You can feel the slope under your feet. The strategy: always step in the direction that goes most steeply downhill. That's gradient descent.
+</div>
+
+<h4>Gradient — the Direction of Steepest Ascent</h4>
+<p>
+  For a function \(f(\theta_1, \theta_2, \ldots, \theta_d)\), the gradient is the vector of all partial derivatives:
+</p>
+<div class="math-block">
+  <span class="label">Gradient</span>
+  $$\nabla_\theta f = \left[\frac{\partial f}{\partial \theta_1}, \frac{\partial f}{\partial \theta_2}, \ldots, \frac{\partial f}{\partial \theta_d}\right]^T$$
+</div>
+<p>
+  The gradient points in the direction of steepest <em>increase</em>. To minimize a loss function, we go in the opposite direction.
+</p>
+
+<h4>Gradient Descent Update Rule</h4>
+<div class="math-block">
+  <span class="label">Update Rule</span>
+  $$\theta^{(t+1)} = \theta^{(t)} - \eta \, \nabla_\theta \mathcal{L}(\theta^{(t)})$$
+</div>
+<p>
+  Where \(\eta\) is the <strong>learning rate</strong> — the step size. Too large → you overshoot the minimum and diverge. Too small → you converge painfully slowly. This single hyperparameter is arguably the most important in all of deep learning.
+</p>
+
+<h5>Stochastic Gradient Descent (SGD)</h5>
+<p>
+  Computing the gradient over all \(N\) data points is expensive. SGD approximates the true gradient using a random subset (mini-batch) of size \(B\):
+</p>
+<div class="math-block">
+  $$\nabla_\theta \mathcal{L} \approx \frac{1}{B} \sum_{i \in \text{batch}} \nabla_\theta \mathcal{L}_i(\theta)$$
+</div>
+<p>
+  This is noisier but much faster, and the noise actually helps escape shallow local minima. Modern deep learning almost exclusively uses mini-batch SGD or its adaptive variants (Adam, AdamW).
+</p>
+
+<h4>The Chain Rule — Foundation of Backpropagation</h4>
+<p>
+  If \(y = f(g(x))\), then:
+</p>
+<div class="math-block">
+  <span class="label">Chain Rule</span>
+  $$\frac{dy}{dx} = \frac{dy}{dg} \cdot \frac{dg}{dx}$$
+</div>
+<p>
+  This extends to arbitrarily long chains — which is exactly what a deep neural network is. Backpropagation is nothing more than the systematic application of the chain rule through the computational graph.
+</p>
+
+<div class="exercise">
+  <strong>(a)</strong> Let \(f(\theta) = (\theta - 3)^2\). Compute \(\nabla_\theta f\). Starting at \(\theta_0 = 0\), perform 3 steps of gradient descent with \(\eta = 0.1\). Where do you end up?<br>
+  <strong>(b)</strong> Let \(y = \sigma(w \cdot x + b)\) where \(\sigma(z) = 1/(1 + e^{-z})\). Using the chain rule, compute \(\frac{\partial y}{\partial w}\).
+</div>
+
+<div class="separator">· · ·</div>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     PART II — CORE MACHINE LEARNING
+     ═══════════════════════════════════════════════════════════════ -->
+<div class="part-header" id="part2">
+  <div class="part-label">Part II</div>
+  <h2>Core Machine Learning</h2>
+</div>
+
+<!-- ─── 2.1 Linear Regression ─── -->
+<h3>2.1 &ensp; Linear Regression — Full Derivation</h3>
+
+<div class="intuition">
+  You're a real-estate agent. You notice that bigger houses cost more. You want to draw the "best fitting line" through the data so you can predict the price of any new house. Linear regression finds that line by minimizing the total prediction error.
+</div>
+
+<h4>The Model</h4>
+<p>We assume a linear relationship between input features \(\mathbf{x}\) and output \(y\):</p>
+<div class="math-block">
+  <span class="label">Linear Model</span>
+  $$\hat{y} = \mathbf{w}^T \mathbf{x} + b = \sum_{j=1}^{d} w_j x_j + b$$
+</div>
+<p>
+  Where \(\mathbf{w} \in \mathbb{R}^d\) are <strong>weights</strong> (how much each feature matters), \(b\) is the <strong>bias</strong> (the baseline prediction when all features are 0), and \(\hat{y}\) is the prediction.
+</p>
+
+<h4>The Loss Function — Why Squared Error?</h4>
+<p>
+  We assume each observation has Gaussian noise: \(y_i = \mathbf{w}^T \mathbf{x}_i + b + \epsilon_i\) where \(\epsilon_i \sim \mathcal{N}(0, \sigma^2)\).
+</p>
+<p>
+  The likelihood of all data is:
+</p>
+$$p(\mathbf{y} \mid \mathbf{X}, \mathbf{w}) = \prod_{i=1}^{N} \frac{1}{\sqrt{2\pi}\sigma} \exp\!\left(-\frac{(y_i - \mathbf{w}^T \mathbf{x}_i - b)^2}{2\sigma^2}\right)$$
+<p>
+  Taking the negative log likelihood (since we minimize):
+</p>
+<div class="math-block">
+  <span class="label">Mean Squared Error (from MLE)</span>
+  $$\mathcal{L}(\mathbf{w}, b) = \frac{1}{N}\sum_{i=1}^{N} (y_i - \hat{y}_i)^2 = \frac{1}{N}\sum_{i=1}^{N} (y_i - \mathbf{w}^T \mathbf{x}_i - b)^2$$
+</div>
+<p>
+  The constant terms from the Gaussian vanish because they don't depend on \(\mathbf{w}\). <strong>MSE loss is not an arbitrary choice — it's the MLE-optimal loss when noise is Gaussian.</strong>
+</p>
+
+<h4>Closed-Form Solution (Normal Equation)</h4>
+<p>Setting the gradient to zero and solving (absorbing \(b\) into \(\mathbf{w}\) by adding a column of 1s to \(\mathbf{X}\)):</p>
+<div class="math-block">
+  <span class="label">Normal Equation</span>
+  $$\hat{\mathbf{w}} = (\mathbf{X}^T \mathbf{X})^{-1} \mathbf{X}^T \mathbf{y}$$
+</div>
+<p><strong>Derivation:</strong> Write the loss in matrix form: \(\mathcal{L} = \frac{1}{N}(\mathbf{y} - \mathbf{X}\mathbf{w})^T(\mathbf{y} - \mathbf{X}\mathbf{w})\). Expand, take the gradient w.r.t. \(\mathbf{w}\), set to zero:</p>
+$$\nabla_\mathbf{w} \mathcal{L} = -\frac{2}{N}\mathbf{X}^T(\mathbf{y} - \mathbf{X}\mathbf{w}) = 0 \implies \mathbf{X}^T\mathbf{X}\mathbf{w} = \mathbf{X}^T\mathbf{y}$$
+
+<h4>Gradient Descent Solution</h4>
+<p>For large datasets where the matrix inverse is expensive, we use gradient descent instead:</p>
+<div class="math-block">
+  <span class="label">Gradient Update for Linear Regression</span>
+  $$w_j \leftarrow w_j - \eta \cdot \frac{2}{N} \sum_{i=1}^{N} ({\hat{y}_i - y_i}) \cdot x_{ij}$$
+</div>
+<p>
+  <strong>Read this equation:</strong> The update to weight \(w_j\) is proportional to the average of (prediction error) × (the corresponding feature value). If the model over-predicts (\(\hat{y}_i > y_i\)) and feature \(x_{ij}\) is positive, we decrease \(w_j\).
+</p>
+
+<div class="example">
+  Data: \((x=1, y=2)\), \((x=2, y=4)\), \((x=3, y=5)\). Model: \(\hat{y} = wx + b\).<br><br>
+  <strong>Normal equation</strong> (with \(\mathbf{X}\) augmented with 1s column):<br>
+  \(\mathbf{X} = \begin{bmatrix} 1 & 1 \\ 1 & 2 \\ 1 & 3\end{bmatrix}\), &ensp; \(\mathbf{y} = \begin{bmatrix}2\\4\\5\end{bmatrix}\)<br><br>
+  \(\mathbf{X}^T\mathbf{X} = \begin{bmatrix}3 & 6\\6 & 14\end{bmatrix}\), &ensp; \(\mathbf{X}^T\mathbf{y} = \begin{bmatrix}11\\23\end{bmatrix}\)<br><br>
+  \(\hat{\mathbf{w}} = \begin{bmatrix}3 & 6\\6 & 14\end{bmatrix}^{-1}\begin{bmatrix}11\\23\end{bmatrix} = \frac{1}{6}\begin{bmatrix}14 & -6\\-6 & 3\end{bmatrix}\begin{bmatrix}11\\23\end{bmatrix} = \begin{bmatrix}2/3 \\ 3/2\end{bmatrix}\)<br><br>
+  So \(b \approx 0.67\), \(w = 1.5\). The best line is \(\hat{y} = 1.5x + 0.67\).
+</div>
+
+<!-- ─── 2.2 Logistic Regression ─── -->
+<h3>2.2 &ensp; Logistic Regression — Full Derivation</h3>
+
+<div class="intuition">
+  Now you're classifying emails as spam or not-spam. The output should be a probability between 0 and 1. A linear function \(\mathbf{w}^T\mathbf{x}\) can produce any real number, so we squeeze it through the <strong>sigmoid function</strong> to get a probability.
+</div>
+
+<h4>The Sigmoid Function</h4>
+<div class="math-block">
+  <span class="label">Sigmoid</span>
+  $$\sigma(z) = \frac{1}{1 + e^{-z}} = \frac{e^z}{1 + e^z}$$
+</div>
+<p>
+  Properties: \(\sigma(0) = 0.5\), \(\lim_{z \to \infty} \sigma(z) = 1\), \(\lim_{z \to -\infty} \sigma(z) = 0\). Its derivative has a beautiful form: \(\sigma'(z) = \sigma(z)(1 - \sigma(z))\) — which simplifies gradient calculations enormously.
+</p>
+
+<h4>The Model</h4>
+<div class="math-block">
+  $$P(y = 1 \mid \mathbf{x}) = \sigma(\mathbf{w}^T \mathbf{x} + b)$$
+</div>
+
+<h4>Loss Function — Deriving Cross-Entropy from MLE</h4>
+<p>
+  Each label follows a Bernoulli: \(P(y_i \mid \mathbf{x}_i) = \hat{p}_i^{y_i}(1 - \hat{p}_i)^{1 - y_i}\) where \(\hat{p}_i = \sigma(\mathbf{w}^T\mathbf{x}_i + b)\).
+</p>
+<p>Negative log-likelihood:</p>
+<div class="math-block">
+  <span class="label">Binary Cross-Entropy Loss</span>
+  $$\mathcal{L} = -\frac{1}{N}\sum_{i=1}^{N}\left[y_i \log \hat{p}_i + (1 - y_i) \log(1 - \hat{p}_i)\right]$$
+</div>
+<p>
+  <strong>Interpreting each term:</strong> When \(y_i = 1\), only the first term survives — it penalizes low \(\hat{p}_i\). When \(y_i = 0\), only the second term survives — it penalizes high \(\hat{p}_i\). The loss is 0 when predictions perfectly match labels.
+</p>
+
+<h4>Gradient Derivation</h4>
+<p>
+  The gradient turns out to be strikingly elegant:
+</p>
+<div class="math-block">
+  <span class="label">Gradient of Cross-Entropy w.r.t. Weights</span>
+  $$\frac{\partial \mathcal{L}}{\partial w_j} = \frac{1}{N}\sum_{i=1}^{N} (\hat{p}_i - y_i) \cdot x_{ij}$$
+</div>
+<p>
+  <strong>Derivation sketch:</strong> Using \(\frac{\partial}{\partial z}[-y\log\sigma(z) - (1-y)\log(1-\sigma(z))] = \sigma(z) - y\), and then applying the chain rule \(\frac{\partial z}{\partial w_j} = x_j\).
+</p>
+<p>
+  Notice this has exactly the same form as the linear regression gradient! The error signal \((\hat{p}_i - y_i)\) gets multiplied by the input feature \(x_{ij}\). This is not a coincidence — both are members of the <strong>generalized linear model</strong> family.
+</p>
+
+<h4>Geometric Interpretation — The Decision Boundary</h4>
+<p>
+  Logistic regression defines a <strong>linear decision boundary</strong>: the hyperplane where \(\mathbf{w}^T\mathbf{x} + b = 0\) (i.e., \(\hat{p} = 0.5\)). On one side, \(\hat{p} > 0.5\) (predict class 1); on the other, \(\hat{p} < 0.5\) (predict class 0). The weight vector \(\mathbf{w}\) is perpendicular to this boundary and points toward the class-1 side.
+</p>
+
+<div class="exercise">
+  <strong>(a)</strong> A spam classifier has \(w_{\text{free}} = 2.0\), \(w_{\text{meeting}} = -1.5\), \(b = -0.5\). For an email with features \(x_{\text{free}} = 1\), \(x_{\text{meeting}} = 1\), compute \(P(\text{spam})\).<br>
+  <strong>(b)</strong> If the true label is \(y = 1\) (spam), compute the binary cross-entropy loss for this example.<br>
+  <strong>(c)</strong> Compute the gradient update for \(w_{\text{free}}\) with \(\eta = 0.1\).
+</div>
+
+<!-- ─── 2.3 Loss Functions ─── -->
+<h3>2.3 &ensp; Loss Functions — A Unified View</h3>
+
+<table>
+  <tr><th>Loss</th><th>Formula</th><th>When to Use</th><th>Probabilistic Origin</th></tr>
+  <tr><td>MSE</td><td>\(\frac{1}{N}\sum(y_i - \hat{y}_i)^2\)</td><td>Regression</td><td>Gaussian likelihood</td></tr>
+  <tr><td>Binary CE</td><td>\(-\frac{1}{N}\sum[y\log\hat{p} + (1-y)\log(1-\hat{p})]\)</td><td>Binary classification</td><td>Bernoulli likelihood</td></tr>
+  <tr><td>Categorical CE</td><td>\(-\frac{1}{N}\sum\sum_{k} y_k \log \hat{p}_k\)</td><td>Multi-class</td><td>Categorical likelihood</td></tr>
+</table>
+
+<div class="intuition">
+  Every standard loss function is just the negative log-likelihood under a specific probabilistic assumption about the data. Choosing a loss function = choosing your noise model.
+</div>
+
+<div class="separator">· · ·</div>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     PART III — NEURAL NETWORKS
+     ═══════════════════════════════════════════════════════════════ -->
+<div class="part-header" id="part3">
+  <div class="part-label">Part III</div>
+  <h2>Neural Networks</h2>
+</div>
+
+<h3>3.1 &ensp; From Linear Models to Neural Networks</h3>
+
+<div class="intuition">
+  Linear regression can only draw straight lines. But what if the relationship between house size and price is curved? We need a way to bend the line. That's what a neural network does: it stacks linear transformations with nonlinear "activations" to create arbitrarily complex functions.
+</div>
+
+<h4>Why linearity isn't enough</h4>
+<p>
+  If you compose two linear functions, \(f(\mathbf{x}) = \mathbf{W}_2(\mathbf{W}_1 \mathbf{x}) = (\mathbf{W}_2 \mathbf{W}_1)\mathbf{x}\), you just get another linear function. Stacking linear layers without activations gives you nothing new. The activation function breaks this linearity.
+</p>
+
+<h4>A Single Neuron</h4>
+<div class="math-block">
+  <span class="label">Neuron</span>
+  $$a = \phi(\mathbf{w}^T \mathbf{x} + b)$$
+</div>
+<p>
+  Where \(\phi\) is a nonlinear <strong>activation function</strong>. Common choices:
+</p>
+<table>
+  <tr><th>Name</th><th>Formula</th><th>Derivative</th><th>Notes</th></tr>
+  <tr><td>Sigmoid</td><td>\(\frac{1}{1+e^{-z}}\)</td><td>\(\sigma(z)(1-\sigma(z))\)</td><td>Squashes to (0,1); causes vanishing gradients</td></tr>
+  <tr><td>Tanh</td><td>\(\frac{e^z - e^{-z}}{e^z + e^{-z}}\)</td><td>\(1 - \tanh^2(z)\)</td><td>Squashes to (-1,1); zero-centered</td></tr>
+  <tr><td>ReLU</td><td>\(\max(0, z)\)</td><td>\(\begin{cases}1 & z > 0\\0 & z \leq 0\end{cases}\)</td><td>Simple, fast; default choice for hidden layers</td></tr>
+  <tr><td>GELU</td><td>\(z \cdot \Phi(z)\)</td><td>smooth approx.</td><td>Used in transformers; smooth version of ReLU</td></tr>
+</table>
+
+<h3>3.2 &ensp; Multi-Layer Network (MLP) — Forward Pass</h3>
+
+<p>An \(L\)-layer network computes:</p>
+<div class="math-block">
+  <span class="label">Forward Pass</span>
+  $$\mathbf{z}^{[l]} = \mathbf{W}^{[l]} \mathbf{a}^{[l-1]} + \mathbf{b}^{[l]}$$
+  $$\mathbf{a}^{[l]} = \phi(\mathbf{z}^{[l]})$$
+</div>
+<p>
+  Where \(\mathbf{a}^{[0]} = \mathbf{x}\) (input), and the final layer's activation depends on the task (sigmoid for binary, softmax for multi-class, identity for regression).
+</p>
+
+<div class="example">
+  <strong>2-layer network</strong>, 2 inputs, 2 hidden units, 1 output (with sigmoid):<br>
+  Input: \(\mathbf{x} = [1, 0.5]^T\)<br>
+  \(\mathbf{W}^{[1]} = \begin{bmatrix}0.1 & 0.3\\0.2 & 0.4\end{bmatrix}\), \(\mathbf{b}^{[1]} = \begin{bmatrix}0\\0\end{bmatrix}\)<br>
+  \(\mathbf{W}^{[2]} = \begin{bmatrix}0.5 & 0.6\end{bmatrix}\), \(b^{[2]} = 0\)<br><br>
+  <strong>Layer 1:</strong> \(\mathbf{z}^{[1]} = \begin{bmatrix}0.1(1) + 0.3(0.5)\\0.2(1)+0.4(0.5)\end{bmatrix} = \begin{bmatrix}0.25\\0.40\end{bmatrix}\)<br>
+  \(\mathbf{a}^{[1]} = \text{ReLU}(\mathbf{z}^{[1]}) = \begin{bmatrix}0.25\\0.40\end{bmatrix}\) (both positive, ReLU passes them through)<br><br>
+  <strong>Layer 2:</strong> \(z^{[2]} = 0.5(0.25) + 0.6(0.40) = 0.365\)<br>
+  \(a^{[2]} = \sigma(0.365) = \frac{1}{1 + e^{-0.365}} \approx 0.59\)<br><br>
+  The network outputs probability ≈ 0.59.
+</div>
+
+<h3>3.3 &ensp; Backpropagation — Full Derivation</h3>
+
+<div class="intuition">
+  Backpropagation answers one question: <em>how should I adjust each weight to reduce the loss?</em> It works backwards from the output, using the chain rule to attribute "blame" for the error to each weight in the network.
+</div>
+
+<h4>Step-by-step for a 2-layer network with sigmoid output and BCE loss</h4>
+
+<p><strong>Step 1: Output layer error</strong></p>
+<div class="math-block">
+  $$\delta^{[2]} = \frac{\partial \mathcal{L}}{\partial z^{[2]}} = a^{[2]} - y$$
+</div>
+<p>(This elegant result comes from the cancellation between the BCE derivative and sigmoid derivative.)</p>
+
+<p><strong>Step 2: Output layer gradients</strong></p>
+<div class="math-block">
+  $$\frac{\partial \mathcal{L}}{\partial \mathbf{W}^{[2]}} = \delta^{[2]} \cdot (\mathbf{a}^{[1]})^T \qquad \frac{\partial \mathcal{L}}{\partial b^{[2]}} = \delta^{[2]}$$
+</div>
+
+<p><strong>Step 3: Propagate error backward</strong></p>
+<div class="math-block">
+  $$\boldsymbol{\delta}^{[1]} = (\mathbf{W}^{[2]})^T \delta^{[2]} \odot \phi'(\mathbf{z}^{[1]})$$
+</div>
+<p>Where \(\odot\) is element-wise multiplication. Each hidden neuron's error is proportional to: (1) how strongly it connects to the output, times (2) the output error, times (3) the local derivative of its activation.</p>
+
+<p><strong>Step 4: Hidden layer gradients</strong></p>
+<div class="math-block">
+  $$\frac{\partial \mathcal{L}}{\partial \mathbf{W}^{[1]}} = \boldsymbol{\delta}^{[1]} \cdot \mathbf{x}^T \qquad \frac{\partial \mathcal{L}}{\partial \mathbf{b}^{[1]}} = \boldsymbol{\delta}^{[1]}$$
+</div>
+
+<h4>The General Pattern</h4>
+<div class="math-block">
+  <span class="label">Backpropagation — General Form</span>
+  $$\boldsymbol{\delta}^{[l]} = \left[(\mathbf{W}^{[l+1]})^T \boldsymbol{\delta}^{[l+1]}\right] \odot \phi'(\mathbf{z}^{[l]})$$
+  $$\frac{\partial \mathcal{L}}{\partial \mathbf{W}^{[l]}} = \boldsymbol{\delta}^{[l]} (\mathbf{a}^{[l-1]})^T$$
+</div>
+<p>
+  This recurses from the last layer to the first. The gradient for each weight is: (error at that layer) × (activation from the previous layer). This is why it's called backpropagation — the error signal propagates backward through the network.
+</p>
+
+<div class="warning">
+  <strong>Vanishing gradients:</strong> In deep networks with sigmoid/tanh activations, the gradient at early layers becomes a product of many derivatives less than 1 — it shrinks exponentially. This is why ReLU (derivative = 1 for positive inputs) became standard: it lets gradients flow unchanged through active neurons.
+</div>
+
+<div class="paper-ref">
+  <strong>Rumelhart, Hinton & Williams (1986)</strong> — "Learning representations by back-propagating errors." The foundational paper that made neural network training practical. It showed that gradient descent + chain rule can learn useful internal representations in hidden layers.
+</div>
+
+<div class="exercise">
+  Continuing the numerical example above (output = 0.59, true label \(y = 1\)):<br>
+  <strong>(a)</strong> Compute \(\delta^{[2]} = a^{[2]} - y\).<br>
+  <strong>(b)</strong> Compute \(\frac{\partial \mathcal{L}}{\partial \mathbf{W}^{[2]}}\).<br>
+  <strong>(c)</strong> Compute \(\boldsymbol{\delta}^{[1]}\) (using ReLU derivative = 1 since both units were positive).<br>
+  <strong>(d)</strong> Update all weights with \(\eta = 0.1\).
+</div>
+
+<div class="separator">· · ·</div>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     PART IV — DEEP LEARNING ARCHITECTURES
+     ═══════════════════════════════════════════════════════════════ -->
+<div class="part-header" id="part4">
+  <div class="part-label">Part IV</div>
+  <h2>Deep Learning Architectures</h2>
+</div>
+
+<!-- ─── 4.1 CNNs ─── -->
+<h3>4.1 &ensp; Convolutional Neural Networks</h3>
+
+<div class="intuition">
+  When you look at a photo, you don't analyze every pixel in relation to every other pixel. You first detect local features — edges, textures, colors — and then combine them into larger patterns (eyes, noses) and eventually whole objects (faces). CNNs mimic this hierarchy.
+</div>
+
+<h4>The Convolution Operation</h4>
+<p>A <strong>filter</strong> (kernel) \(\mathbf{K} \in \mathbb{R}^{k \times k}\) slides over the input, computing a dot product at each position:</p>
+<div class="math-block">
+  <span class="label">2D Convolution</span>
+  $$(\mathbf{I} * \mathbf{K})_{i,j} = \sum_{m=0}^{k-1}\sum_{n=0}^{k-1} I_{i+m, j+n} \cdot K_{m,n}$$
+</div>
+<p>
+  <strong>Each term:</strong> \(I_{i+m, j+n}\) is the pixel at position \((i+m, j+n)\); \(K_{m,n}\) is the filter weight. The sum is a dot product between the local image patch and the filter.
+</p>
+<p>
+  <strong>Key insight:</strong> The same filter is applied at every spatial location (<strong>weight sharing</strong>). If a filter learns to detect vertical edges, it can detect them anywhere in the image. This is <strong>translational equivariance</strong>.
+</p>
+
+<h4>CNN Architecture Pattern</h4>
+<p>
+  Input → [Conv → ReLU → Pool]×N → Flatten → Fully-Connected → Output
+</p>
+<p>
+  <strong>Pooling</strong> (e.g., max-pooling) reduces spatial dimensions, providing some translation invariance and reducing computation. A 2×2 max pool takes the maximum in each 2×2 block, halving both height and width.
+</p>
+
+<h4>How CNNs Learn Pattern Hierarchies</h4>
+<p>
+  <strong>Layer 1 filters</strong> learn low-level features: edges, color gradients, simple textures. <strong>Layer 2</strong> combines these into mid-level features: corners, curves, small texture patterns. <strong>Deeper layers</strong> learn increasingly abstract features: object parts, shapes, eventually entire object categories. The network builds a compositional representation of visual reality.
+</p>
+
+<div class="paper-ref">
+  <strong>LeCun et al. (1998)</strong> — "Gradient-based learning applied to document recognition." Introduced LeNet-5 for handwritten digit recognition — the architecture that launched modern CNNs.<br><br>
+  <strong>Krizhevsky, Sutskever & Hinton (2012)</strong> — "ImageNet Classification with Deep Convolutional Neural Networks" (AlexNet). Won ImageNet by a huge margin, igniting the deep learning revolution. Key innovations: ReLU activations, dropout regularization, GPU training.
+</div>
+
+<!-- ─── 4.2 RNNs ─── -->
+<h3>4.2 &ensp; Recurrent Neural Networks & LSTMs</h3>
+
+<div class="intuition">
+  Language is sequential: the meaning of "bank" depends on whether the previous words were "river" or "investment." RNNs process sequences one element at a time, maintaining a hidden state that acts as a "memory" of what came before.
+</div>
+
+<h4>RNN Equations</h4>
+<div class="math-block">
+  <span class="label">Vanilla RNN</span>
+  $$\mathbf{h}_t = \tanh(\mathbf{W}_{hh}\mathbf{h}_{t-1} + \mathbf{W}_{xh}\mathbf{x}_t + \mathbf{b}_h)$$
+  $$\mathbf{y}_t = \mathbf{W}_{hy}\mathbf{h}_t + \mathbf{b}_y$$
+</div>
+<p>
+  At each time step \(t\), the hidden state \(\mathbf{h}_t\) is a function of the previous state \(\mathbf{h}_{t-1}\) and the current input \(\mathbf{x}_t\). The same weights \(\mathbf{W}_{hh}, \mathbf{W}_{xh}\) are shared across all time steps.
+</p>
+
+<h4>The Problem: Vanishing/Exploding Gradients</h4>
+<p>
+  During backpropagation through time (BPTT), the gradient at time step \(t\) depends on a product of Jacobians: \(\prod_{k=t}^{T} \frac{\partial \mathbf{h}_{k}}{\partial \mathbf{h}_{k-1}}\). For long sequences, this product either explodes or vanishes, making it impossible to learn long-range dependencies.
+</p>
+
+<h4>LSTM — Solving the Memory Problem</h4>
+<div class="math-block">
+  <span class="label">LSTM Equations</span>
+  $$\mathbf{f}_t = \sigma(\mathbf{W}_f[\mathbf{h}_{t-1}, \mathbf{x}_t] + \mathbf{b}_f) \quad \text{(forget gate)}$$
+  $$\mathbf{i}_t = \sigma(\mathbf{W}_i[\mathbf{h}_{t-1}, \mathbf{x}_t] + \mathbf{b}_i) \quad \text{(input gate)}$$
+  $$\tilde{\mathbf{c}}_t = \tanh(\mathbf{W}_c[\mathbf{h}_{t-1}, \mathbf{x}_t] + \mathbf{b}_c) \quad \text{(candidate memory)}$$
+  $$\mathbf{c}_t = \mathbf{f}_t \odot \mathbf{c}_{t-1} + \mathbf{i}_t \odot \tilde{\mathbf{c}}_t \quad \text{(cell state update)}$$
+  $$\mathbf{o}_t = \sigma(\mathbf{W}_o[\mathbf{h}_{t-1}, \mathbf{x}_t] + \mathbf{b}_o) \quad \text{(output gate)}$$
+  $$\mathbf{h}_t = \mathbf{o}_t \odot \tanh(\mathbf{c}_t)$$
+</div>
+<p>
+  <strong>The key idea:</strong> The cell state \(\mathbf{c}_t\) is an "information highway" — it flows through time with only additive updates, so gradients can flow backward without vanishing. The forget gate decides what to erase from memory; the input gate decides what new information to store.
+</p>
+
+<div class="paper-ref">
+  <strong>Hochreiter & Schmidhuber (1997)</strong> — "Long Short-Term Memory." The paper that solved the vanishing gradient problem for recurrent networks with the gating mechanism. LSTMs dominated sequence modeling for nearly two decades.
+</div>
+
+<div class="exercise">
+  <strong>(a)</strong> In an LSTM, if the forget gate outputs all 1s and the input gate outputs all 0s, what happens to the cell state? What about the reverse?<br>
+  <strong>(b)</strong> Why is the cell state update additive (\(\mathbf{c}_t = \mathbf{f}_t \odot \mathbf{c}_{t-1} + \ldots\)) rather than multiplicative? How does this help gradient flow?
+</div>
+
+<div class="separator">· · ·</div>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     PART V — NLP FOUNDATIONS
+     ═══════════════════════════════════════════════════════════════ -->
+<div class="part-header" id="part5">
+  <div class="part-label">Part V</div>
+  <h2>NLP Foundations</h2>
+</div>
+
+<h3>5.1 &ensp; Word Embeddings — Giving Meaning to Numbers</h3>
+
+<div class="intuition">
+  How do you represent the word "king" as a number a neural network can process? One-hot encoding (a vector of mostly zeros with a single 1) treats every word as equally different from every other — "king" is as different from "queen" as from "banana." Word embeddings learn <em>dense</em> vectors where similar words are near each other in the vector space.
+</div>
+
+<h4>The Distributional Hypothesis</h4>
+<p>
+  <strong>"You shall know a word by the company it keeps"</strong> — J.R. Firth, 1957. Words that appear in similar contexts have similar meanings. "Dog" and "cat" appear near "pet," "fur," "vet." This insight is the foundation of all modern word embeddings.
+</p>
+
+<h4>Word2Vec (Skip-Gram) — Derivation</h4>
+
+<div class="paper-ref">
+  <strong>Mikolov et al. (2013)</strong> — "Efficient Estimation of Word Representations in Vector Space" and "Distributed Representations of Words and Phrases and their Compositionality." These papers showed that simple neural networks trained on word co-occurrence learn vectors with remarkable algebraic properties (e.g., king - man + woman ≈ queen).
+</div>
+
+<p><strong>Setup:</strong> Given a center word \(w_c\), predict the surrounding context words \(w_o\). Each word has two embedding vectors: \(\mathbf{v}_w\) (when it's the center word) and \(\mathbf{u}_w\) (when it's a context word).</p>
+
+<p><strong>Probability model:</strong></p>
+<div class="math-block">
+  <span class="label">Skip-Gram Objective</span>
+  $$P(w_o \mid w_c) = \frac{\exp(\mathbf{u}_{w_o}^T \mathbf{v}_{w_c})}{\sum_{w \in V} \exp(\mathbf{u}_w^T \mathbf{v}_{w_c})}$$
+</div>
+<p>
+  This is a softmax over the entire vocabulary. The numerator is the dot product between the context word's embedding and the center word's embedding — a measure of compatibility. The denominator normalizes across all possible words.
+</p>
+<p>
+  <strong>Training objective:</strong> Maximize the log-probability of observed (center, context) pairs:
+</p>
+$$\mathcal{L} = \sum_{t=1}^{T}\sum_{-m \leq j \leq m, j \neq 0} \log P(w_{t+j} \mid w_t)$$
+
+<p><strong>Negative Sampling approximation:</strong> Computing the full softmax over 100K+ words is prohibitive. Instead, for each positive pair, we sample \(k\) "negative" words (random words unlikely to be in the context) and train a binary classifier:</p>
+<div class="math-block">
+  <span class="label">Negative Sampling Objective</span>
+  $$\mathcal{L} = \log\sigma(\mathbf{u}_{w_o}^T \mathbf{v}_{w_c}) + \sum_{i=1}^{k} \mathbb{E}_{w_i \sim P_n(w)}\left[\log\sigma(-\mathbf{u}_{w_i}^T \mathbf{v}_{w_c})\right]$$
+</div>
+<p>
+  This says: maximize the dot product with the true context word (positive pair) while minimizing the dot product with random words (negative pairs). The result: words appearing in similar contexts get pulled together in vector space.
+</p>
+
+<h4>GloVe — Global Vectors</h4>
+
+<div class="paper-ref">
+  <strong>Pennington, Socher & Manning (2014)</strong> — "GloVe: Global Vectors for Word Representation." Instead of predicting from local windows, GloVe directly factorizes the global co-occurrence matrix.
+</div>
+
+<p><strong>Key insight:</strong> Let \(X_{ij}\) be the count of how often word \(j\) appears in the context of word \(i\). GloVe optimizes:</p>
+<div class="math-block">
+  <span class="label">GloVe Objective</span>
+  $$\mathcal{L} = \sum_{i,j=1}^{|V|} f(X_{ij}) \left(\mathbf{w}_i^T \tilde{\mathbf{w}}_j + b_i + \tilde{b}_j - \log X_{ij}\right)^2$$
+</div>
+<p>
+  Where \(f(X_{ij})\) is a weighting function that prevents very common co-occurrences from dominating. The objective says: the dot product of two word vectors should approximate the log of how often they co-occur.
+</p>
+
+<h4>Subword Tokenization (BPE)</h4>
+<p>
+  Modern LLMs don't embed whole words — they use <strong>subword tokens</strong>. Byte Pair Encoding (BPE) starts with individual characters and iteratively merges the most frequent pairs: "l o w e r" → "lo w e r" → "low e r" → "low er" → "lower". This handles unseen words by decomposing them into known subwords, and reduces vocabulary size while maintaining expressiveness.
+</p>
+
+<div class="exercise">
+  <strong>(a)</strong> If king - man + woman ≈ queen works in vector space, what does this tell you about how the embedding dimensions encode meaning?<br>
+  <strong>(b)</strong> Why does the skip-gram model need two different embedding matrices (center vs. context)? What would happen if we used the same matrix for both?
+</div>
+
+<div class="separator">· · ·</div>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     PART VI — ATTENTION & TRANSFORMERS
+     ═══════════════════════════════════════════════════════════════ -->
+<div class="part-header" id="part6">
+  <div class="part-label">Part VI</div>
+  <h2>Attention & Transformers</h2>
+</div>
+
+<p>
+  This is the section that makes everything else click. The transformer architecture, built entirely on the attention mechanism, is the foundation of all modern language models.
+</p>
+
+<h3>6.1 &ensp; The Attention Mechanism — From First Principles</h3>
+
+<div class="intuition">
+  Imagine translating "The cat sat on the mat" into French. When generating the French word for "cat," you need to focus on ("attend to") the English word "cat" — not "the" or "mat." Attention is a mechanism that lets the model dynamically decide which parts of the input to focus on for each output.
+</div>
+
+<h4>Attention as Weighted Retrieval</h4>
+<p>
+  Think of attention as a soft dictionary lookup. You have a <strong>query</strong> (what you're looking for), a set of <strong>keys</strong> (labels in the dictionary), and <strong>values</strong> (the stored information). The query is compared to all keys to compute relevance scores, and the output is a weighted sum of values.
+</p>
+
+<h4>Dot-Product Attention — Derivation</h4>
+
+<p><strong>Step 1: Measure similarity.</strong> Given a query \(\mathbf{q}\) and a key \(\mathbf{k}\), their similarity is the dot product \(\mathbf{q}^T \mathbf{k}\). This measures how aligned the query is with the key in the embedding space.</p>
+
+<p><strong>Step 2: Scale.</strong> The dot product grows with dimensionality \(d_k\), which pushes softmax into saturated regions with tiny gradients. We divide by \(\sqrt{d_k}\):</p>
+$$\text{score}(q, k) = \frac{\mathbf{q}^T \mathbf{k}}{\sqrt{d_k}}$$
+
+<div class="intuition">
+  <strong>Why \(\sqrt{d_k}\)?</strong> If the entries of \(\mathbf{q}\) and \(\mathbf{k}\) are i.i.d. with zero mean and unit variance, their dot product has mean 0 and variance \(d_k\). Dividing by \(\sqrt{d_k}\) normalizes the variance to 1, keeping the softmax input in a well-behaved range.
+</div>
+
+<p><strong>Step 3: Normalize to get attention weights.</strong></p>
+$$\alpha_i = \text{softmax}_i = \frac{\exp(\text{score}(q, k_i))}{\sum_j \exp(\text{score}(q, k_j))}$$
+
+<p><strong>Step 4: Compute weighted output.</strong></p>
+$$\text{output} = \sum_i \alpha_i \mathbf{v}_i$$
+
+<p>Putting it all together in matrix form:</p>
+<div class="math-block">
+  <span class="label">Scaled Dot-Product Attention</span>
+  $$\text{Attention}(\mathbf{Q}, \mathbf{K}, \mathbf{V}) = \text{softmax}\!\left(\frac{\mathbf{Q}\mathbf{K}^T}{\sqrt{d_k}}\right)\mathbf{V}$$
+</div>
+<p>
+  Where \(\mathbf{Q} \in \mathbb{R}^{n \times d_k}\), \(\mathbf{K} \in \mathbb{R}^{m \times d_k}\), \(\mathbf{V} \in \mathbb{R}^{m \times d_v}\). The output is \(\mathbb{R}^{n \times d_v}\).
+</p>
+
+<div class="example">
+  <strong>Tiny attention example.</strong> Sequence: ["I", "love", "cats"], \(d_k = 2\).<br><br>
+  \(\mathbf{Q} = \begin{bmatrix}1 & 0\\0 & 1\\1 & 1\end{bmatrix}\), &ensp; \(\mathbf{K} = \begin{bmatrix}1 & 0\\0 & 1\\0.5 & 0.5\end{bmatrix}\), &ensp; \(\mathbf{V} = \begin{bmatrix}1 & 0\\0 & 1\\0.5 & 0.5\end{bmatrix}\)<br><br>
+  <strong>Scores</strong> \(= \mathbf{Q}\mathbf{K}^T / \sqrt{2}\):<br>
+  \(\begin{bmatrix}1 & 0 & 0.5\\0 & 1 & 0.5\\1 & 1 & 1\end{bmatrix} / 1.41 = \begin{bmatrix}0.71 & 0 & 0.35\\0 & 0.71 & 0.35\\0.71 & 0.71 & 0.71\end{bmatrix}\)<br><br>
+  <strong>Attention weights</strong> (softmax each row):<br>
+  Row 1: \([0.41, 0.20, 0.29]\) — "I" mostly attends to itself.<br>
+  Row 3: \([0.33, 0.33, 0.33]\) — "cats" attends equally (all scores equal).<br><br>
+  <strong>Output</strong> = weights × V = weighted combination of value vectors for each position.
+</div>
+
+<h3>6.2 &ensp; Self-Attention</h3>
+
+<p>
+  In <strong>self-attention</strong>, the queries, keys, and values all come from the same sequence. Each token attends to all other tokens (including itself) in the sequence:
+</p>
+<div class="math-block">
+  <span class="label">Self-Attention</span>
+  $$\mathbf{Q} = \mathbf{X}\mathbf{W}^Q, \quad \mathbf{K} = \mathbf{X}\mathbf{W}^K, \quad \mathbf{V} = \mathbf{X}\mathbf{W}^V$$
+</div>
+<p>
+  Where \(\mathbf{X} \in \mathbb{R}^{n \times d}\) is the sequence of input embeddings, and \(\mathbf{W}^Q, \mathbf{W}^K \in \mathbb{R}^{d \times d_k}\), \(\mathbf{W}^V \in \mathbb{R}^{d \times d_v}\) are learned projection matrices.
+</p>
+<p>
+  <strong>What does self-attention compute?</strong> For each token, it asks "which other tokens in this sequence are relevant to understanding me?" and creates a new representation that blends information from those relevant tokens. In "The animal didn't cross the street because <em>it</em> was too wide," self-attention at the word "it" can learn to assign high weight to "street" (the thing that's wide), resolving the reference.
+</p>
+
+<h3>6.3 &ensp; Multi-Head Attention</h3>
+
+<div class="intuition">
+  A single attention head can only capture one type of relationship at a time (e.g., syntactic dependency). Multiple heads let the model capture different types of relationships simultaneously — one head might capture subject-verb agreement, another might capture coreference, another might capture semantic similarity.
+</div>
+
+<div class="math-block">
+  <span class="label">Multi-Head Attention</span>
+  $$\text{head}_i = \text{Attention}(\mathbf{X}\mathbf{W}_i^Q, \mathbf{X}\mathbf{W}_i^K, \mathbf{X}\mathbf{W}_i^V)$$
+  $$\text{MultiHead}(\mathbf{X}) = \text{Concat}(\text{head}_1, \ldots, \text{head}_h)\mathbf{W}^O$$
+</div>
+<p>
+  If the model dimension is \(d = 512\) and we use \(h = 8\) heads, each head uses \(d_k = d_v = d/h = 64\). The total computation is similar to single-head attention with full dimensionality, but we get \(h\) different attention patterns.
+</p>
+
+<h3>6.4 &ensp; The Transformer — Full Architecture</h3>
+
+<div class="paper-ref">
+  <strong>Vaswani et al. (2017)</strong> — "Attention Is All You Need." The paper that replaced RNNs with pure attention for sequence modeling. Introduced the transformer architecture that now underlies GPT, BERT, and all modern LLMs. One of the most impactful papers in ML history.
+</div>
+
+<h4>Encoder Block</h4>
+<p>Each encoder layer applies two sub-layers with residual connections and layer normalization:</p>
+<div class="math-block">
+  <span class="label">Transformer Encoder Layer</span>
+  $$\mathbf{X}' = \text{LayerNorm}(\mathbf{X} + \text{MultiHead}(\mathbf{X}))$$
+  $$\mathbf{X}'' = \text{LayerNorm}(\mathbf{X}' + \text{FFN}(\mathbf{X}'))$$
+</div>
+<p>Where the feed-forward network (FFN) is applied position-wise:</p>
+$$\text{FFN}(\mathbf{x}) = \mathbf{W}_2 \, \phi(\mathbf{W}_1 \mathbf{x} + \mathbf{b}_1) + \mathbf{b}_2$$
+<p>Typically \(\mathbf{W}_1 \in \mathbb{R}^{d \times 4d}\), \(\mathbf{W}_2 \in \mathbb{R}^{4d \times d}\) — the FFN expands to 4× the dimension and then projects back. This is where "knowledge" is stored (the attention layers route information; the FFN layers process it).</p>
+
+<h4>Positional Encoding</h4>
+<p>Self-attention is permutation-invariant — it doesn't know word order. Positional encodings inject position information:</p>
+<div class="math-block">
+  <span class="label">Sinusoidal Positional Encoding</span>
+  $$PE_{(pos, 2i)} = \sin\!\left(\frac{pos}{10000^{2i/d}}\right), \quad PE_{(pos, 2i+1)} = \cos\!\left(\frac{pos}{10000^{2i/d}}\right)$$
+</div>
+<p>
+  Each dimension oscillates at a different frequency — low dimensions change slowly (encoding coarse position), high dimensions change rapidly (encoding fine position). This allows the model to attend to relative positions.
+</p>
+
+<h4>Decoder Block (for autoregressive generation)</h4>
+<p>The decoder adds <strong>causal (masked) self-attention</strong> — each position can only attend to previous positions, preventing the model from "seeing the future":</p>
+<div class="math-block">
+  $$\text{CausalAttention}(\mathbf{Q}, \mathbf{K}, \mathbf{V}) = \text{softmax}\!\left(\frac{\mathbf{Q}\mathbf{K}^T}{\sqrt{d_k}} + \mathbf{M}\right)\mathbf{V}$$
+</div>
+<p>Where \(M_{ij} = 0\) if \(i \geq j\), and \(M_{ij} = -\infty\) otherwise. The \(-\infty\) values become 0 after softmax, effectively masking future positions.</p>
+
+<h4>Putting It All Together</h4>
+<p>
+  A full transformer for language modeling: Input tokens → Embedding + Positional Encoding → N × Decoder Blocks → Linear projection → Softmax over vocabulary → Predicted next token.
+</p>
+
+<div class="exercise">
+  <strong>(a)</strong> In a model with \(d = 256\), \(h = 4\) heads, what are the dimensions of \(\mathbf{W}_i^Q\), \(\mathbf{W}_i^K\), \(\mathbf{W}_i^V\) for each head?<br>
+  <strong>(b)</strong> Write out the causal mask \(\mathbf{M}\) for a sequence of length 4. After softmax, what does each row of the attention matrix represent?<br>
+  <strong>(c)</strong> Why is the residual connection (\(\mathbf{X} + \text{sublayer}(\mathbf{X})\)) critical for training deep transformers? (Hint: think about gradient flow.)
+</div>
+
+<div class="separator">· · ·</div>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     PART VII — MODERN LLMs
+     ═══════════════════════════════════════════════════════════════ -->
+<div class="part-header" id="part7">
+  <div class="part-label">Part VII</div>
+  <h2>Modern Large Language Models</h2>
+</div>
+
+<h3>7.1 &ensp; The GPT Architecture</h3>
+
+<div class="paper-ref">
+  <strong>Radford et al. (2018, 2019)</strong> — GPT and GPT-2. Showed that a decoder-only transformer pretrained on next-token prediction achieves remarkable few-shot capabilities. GPT-2 demonstrated that scaling up model size and data leads to emergent abilities.<br><br>
+  <strong>Brown et al. (2020)</strong> — "Language Models are Few-Shot Learners" (GPT-3). Scaled to 175B parameters and showed that LLMs can perform tasks from a few examples in the prompt, without any gradient updates.
+</div>
+
+<p>GPT is a <strong>decoder-only transformer</strong>. Its single training objective is strikingly simple:</p>
+
+<h4>Next-Token Prediction (Causal Language Modeling)</h4>
+<div class="math-block">
+  <span class="label">Training Objective</span>
+  $$\mathcal{L} = -\sum_{t=1}^{T} \log P(x_t \mid x_1, x_2, \ldots, x_{t-1}; \theta)$$
+</div>
+<p>
+  For each position \(t\), the model predicts the probability distribution over the entire vocabulary for the next token, given all previous tokens. The loss is the cross-entropy between this prediction and the actual next token.
+</p>
+<p>
+  <strong>How this single objective produces intelligence:</strong> To predict the next word well, the model must learn grammar, facts, reasoning, common sense, style, and much more. The prediction task is a "universal" task that requires understanding language at every level.
+</p>
+
+<h4>The Softmax Output Layer</h4>
+<p>The transformer's output at position \(t\) is a vector \(\mathbf{h}_t \in \mathbb{R}^d\). We project it to vocabulary size and apply softmax:</p>
+<div class="math-block">
+  $$P(x_t = w \mid x_{<t}) = \frac{\exp(\mathbf{e}_w^T \mathbf{h}_t)}{\sum_{w' \in V} \exp(\mathbf{e}_{w'}^T \mathbf{h}_t)}$$
+</div>
+<p>Where \(\mathbf{e}_w\) is the embedding of token \(w\). Often the output embedding matrix is tied (shared) with the input embedding matrix.</p>
+
+<h3>7.2 &ensp; Scaling Laws</h3>
+
+<div class="paper-ref">
+  <strong>Kaplan et al. (2020)</strong> — "Scaling Laws for Neural Language Models." Discovered power-law relationships between model performance and compute, dataset size, and parameter count.<br><br>
+  <strong>Hoffmann et al. (2022)</strong> — "Training Compute-Optimal Large Language Models" (Chinchilla). Showed that most LLMs were significantly undertrained — for a given compute budget, it's better to train a smaller model on more data than a larger model on less data.
+</div>
+
+<p>The cross-entropy loss follows a power law:</p>
+<div class="math-block">
+  <span class="label">Scaling Law</span>
+  $$L(N) \approx \left(\frac{N_c}{N}\right)^{\alpha_N}$$
+</div>
+<p>
+  Where \(N\) is the number of parameters and \(\alpha_N \approx 0.076\). Similar power laws hold for dataset size and compute. The Chinchilla finding: the compute-optimal ratio is roughly 20 tokens per parameter — a 10B parameter model should be trained on ~200B tokens.
+</p>
+
+<h3>7.3 &ensp; Modern Architectural Improvements</h3>
+
+<h4>RMSNorm (replacing LayerNorm)</h4>
+<div class="math-block">
+  $$\text{RMSNorm}(\mathbf{x}) = \frac{\mathbf{x}}{\sqrt{\frac{1}{d}\sum_{i=1}^{d} x_i^2}} \odot \boldsymbol{\gamma}$$
+</div>
+<p>Simpler and faster than LayerNorm (no mean subtraction). Used in LLaMA, GPT-4, and most modern LLMs.</p>
+
+<h4>Rotary Position Embedding (RoPE)</h4>
+<p>Instead of adding positional information, RoPE encodes relative position directly into the attention computation by rotating query and key vectors:</p>
+<div class="math-block">
+  $$\mathbf{q}_m^T \mathbf{k}_n = (\mathbf{R}_m \mathbf{W}^Q \mathbf{x}_m)^T (\mathbf{R}_n \mathbf{W}^K \mathbf{x}_n)$$
+</div>
+<p>Where \(\mathbf{R}_m\) is a rotation matrix that depends on position \(m\). The dot product then depends on the <em>relative</em> position \(m - n\), which is more natural for language understanding.</p>
+
+<h4>SwiGLU Activation (in FFN)</h4>
+<div class="math-block">
+  $$\text{SwiGLU}(\mathbf{x}) = (\mathbf{x}\mathbf{W}_1) \odot \text{SiLU}(\mathbf{x}\mathbf{W}_\text{gate})$$
+</div>
+<p>A gated variant that outperforms plain ReLU in practice. Used in LLaMA, PaLM, and most recent models.</p>
+
+<h4>Grouped-Query Attention (GQA)</h4>
+<p>
+  Standard multi-head attention uses separate K and V projections per head, which is expensive during inference (the KV cache for all heads must be stored). GQA groups heads so that multiple query heads share the same K and V projections, reducing KV cache by a factor of the group size without significant quality loss.
+</p>
+
+<h3>7.4 &ensp; Mixture of Experts (MoE) — The DeepSeek Approach</h3>
+
+<div class="paper-ref">
+  <strong>DeepSeek-V2, V3, R1 (2024–2025)</strong> — Open-weight models that pushed the efficiency frontier using fine-grained MoE with shared experts. DeepSeek-V3 achieves GPT-4-level quality with far less compute by activating only a small fraction of total parameters per token.
+</div>
+
+<div class="intuition">
+  Not every input needs every part of the network. A question about cooking should activate "cooking knowledge" neurons, not "quantum physics" neurons. MoE replaces the single FFN with multiple "expert" FFNs and a router that selects which experts to use for each token.
+</div>
+
+<h4>MoE FFN Layer</h4>
+<div class="math-block">
+  <span class="label">Mixture of Experts</span>
+  $$\mathbf{y} = \sum_{i=1}^{N} g_i(\mathbf{x}) \cdot E_i(\mathbf{x})$$
+  $$g_i(\mathbf{x}) = \begin{cases}\text{softmax}(\text{TopK}(\mathbf{W}_g \mathbf{x}))_i & \text{if expert } i \text{ selected}\\0 & \text{otherwise}\end{cases}$$
+</div>
+<p>
+  Where \(E_i\) are expert FFN networks, and \(\mathbf{W}_g\) is the router/gating network. For each token, only the top-K experts (e.g., K = 2 out of 64) are activated. This means a model with 236B total parameters might only use ~21B parameters per token.
+</p>
+
+<h5>DeepSeek innovations</h5>
+<p>
+  <strong>Fine-grained experts:</strong> Instead of 8 large experts, use 64+ smaller experts — more flexible routing. <strong>Shared experts:</strong> Some experts are always active (capturing common knowledge), while routed experts specialize. <strong>Auxiliary load-balancing loss:</strong> Without regularization, the router can "collapse" and send all tokens to a few experts. An auxiliary loss encourages balanced expert utilization:
+</p>
+$$\mathcal{L}_{\text{balance}} = \alpha \sum_{i=1}^{N} f_i \cdot P_i$$
+<p>Where \(f_i\) is the fraction of tokens routed to expert \(i\) and \(P_i\) is the average routing probability to expert \(i\).</p>
+
+<h3>7.5 &ensp; RLHF — Aligning LLMs with Human Preferences</h3>
+
+<div class="paper-ref">
+  <strong>Ouyang et al. (2022)</strong> — "Training language models to follow instructions with human feedback" (InstructGPT/ChatGPT methodology). Showed that RLHF dramatically improves helpfulness, truthfulness, and safety.
+</div>
+
+<p>The training pipeline has three stages:</p>
+
+<p><strong>Stage 1: Supervised Fine-Tuning (SFT).</strong> Fine-tune the pretrained model on high-quality (prompt, response) examples written by humans.</p>
+
+<p><strong>Stage 2: Reward Model Training.</strong> Collect human preferences: given a prompt and two responses, which is better? Train a reward model \(R_\phi(x, y)\) to predict these preferences using the Bradley-Terry model:</p>
+<div class="math-block">
+  $$P(y_1 \succ y_2 \mid x) = \sigma(R_\phi(x, y_1) - R_\phi(x, y_2))$$
+</div>
+
+<p><strong>Stage 3: RL Optimization.</strong> Use PPO (Proximal Policy Optimization) to maximize the reward while staying close to the SFT policy:</p>
+<div class="math-block">
+  <span class="label">RLHF Objective</span>
+  $$\max_\theta \, \mathbb{E}_{x \sim D, y \sim \pi_\theta(\cdot|x)}\left[R_\phi(x, y)\right] - \beta \, D_{\text{KL}}[\pi_\theta \| \pi_{\text{ref}}]$$
+</div>
+<p>
+  The KL divergence term prevents the model from diverging too far from the reference policy (which would lead to reward hacking — finding outputs that score high on the reward model but are actually nonsensical).
+</p>
+
+<h5>DPO — Direct Preference Optimization</h5>
+<p>A simpler alternative that skips the reward model entirely. Starting from the RLHF objective's closed-form solution, DPO directly optimizes:</p>
+<div class="math-block">
+  $$\mathcal{L}_{\text{DPO}} = -\mathbb{E}\left[\log\sigma\!\left(\beta \log\frac{\pi_\theta(y_w \mid x)}{\pi_{\text{ref}}(y_w \mid x)} - \beta\log\frac{\pi_\theta(y_l \mid x)}{\pi_{\text{ref}}(y_l \mid x)}\right)\right]$$
+</div>
+<p>Where \(y_w\) is the preferred response and \(y_l\) is the rejected response.</p>
+
+<div class="exercise">
+  <strong>(a)</strong> In MoE with 64 experts and top-2 routing, what fraction of parameters are active per token? Why is this beneficial for training and inference?<br>
+  <strong>(b)</strong> In the RLHF objective, what happens if \(\beta \to 0\)? What about \(\beta \to \infty\)?<br>
+  <strong>(c)</strong> A model has been trained with next-token prediction on the entire internet. Why does it still need RLHF? Give a concrete example.
+</div>
+
+<div class="separator">· · ·</div>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     PART VIII — PATTERN DETECTION
+     ═══════════════════════════════════════════════════════════════ -->
+<div class="part-header" id="part8">
+  <div class="part-label">Part VIII</div>
+  <h2>Pattern Detection — A Unified View</h2>
+</div>
+
+<h3>8.1 &ensp; How Models "See" — The Geometric View</h3>
+
+<div class="intuition">
+  Every classifier draws a boundary in the feature space that separates one class from another. Linear models draw flat boundaries (hyperplanes). Neural networks warp the space with nonlinear activations until the classes become linearly separable — then draw a flat boundary in the warped space.
+</div>
+
+<p>
+  Consider binary classification of images (human vs. non-human). Each image is a point in \(\mathbb{R}^{784}\) (for 28×28 pixels). These points form complex, interleaved clusters. A deep network learns a function \(f: \mathbb{R}^{784} \to \mathbb{R}^{d}\) that maps these points to a new space where they are linearly separable.
+</p>
+
+<div class="math-block">
+  <span class="label">What a Neural Network Does, Geometrically</span>
+  $$\text{Input space} \xrightarrow{\text{Layer 1}} \text{new space} \xrightarrow{\text{Layer 2}} \text{new space} \xrightarrow{\ldots} \text{linearly separable space} \xrightarrow{\text{linear classifier}} \text{prediction}$$
+</div>
+
+<p><strong>Each layer performs two operations:</strong></p>
+<p>1. <strong>Affine transformation</strong> (\(\mathbf{Wx} + \mathbf{b}\)): rotates, scales, and shifts the data.</p>
+<p>2. <strong>Nonlinear activation</strong> (\(\phi\)): folds and warps the space (ReLU "folds" by zeroing negative regions).</p>
+
+<h3>8.2 &ensp; The Probabilistic View</h3>
+
+<p>A classifier estimates the posterior probability \(P(y = k \mid \mathbf{x})\). By Bayes' theorem:</p>
+$$P(y = k \mid \mathbf{x}) = \frac{P(\mathbf{x} \mid y = k) \, P(y = k)}{P(\mathbf{x})}$$
+
+<p>The model learns the class-conditional density \(P(\mathbf{x} \mid y = k)\) — the "pattern" of what class-\(k\) data looks like — and the prior \(P(y = k)\). Classification becomes: which class makes the observed data most likely?</p>
+
+<h3>8.3 &ensp; Similarity-Based Pattern Detection</h3>
+
+<p>Modern NLP models don't use explicit class-conditional densities. Instead, they operate in <strong>learned embedding spaces</strong> where patterns are encoded as proximity:</p>
+
+<p><strong>Distance metrics and their roles:</strong></p>
+<table>
+  <tr><th>Metric</th><th>Formula</th><th>Use</th></tr>
+  <tr><td>Euclidean</td><td>\(\|\mathbf{a} - \mathbf{b}\|_2\)</td><td>K-nearest neighbors, clustering</td></tr>
+  <tr><td>Cosine similarity</td><td>\(\frac{\mathbf{a}^T\mathbf{b}}{\|\mathbf{a}\|\|\mathbf{b}\|}\)</td><td>Word embeddings, sentence similarity, retrieval</td></tr>
+  <tr><td>Dot product</td><td>\(\mathbf{a}^T\mathbf{b}\)</td><td>Attention scores (unnormalized similarity)</td></tr>
+  <tr><td>Mahalanobis</td><td>\(\sqrt{(\mathbf{a}-\mathbf{b})^T\Sigma^{-1}(\mathbf{a}-\mathbf{b})}\)</td><td>Distance accounting for correlations</td></tr>
+</table>
+
+<h4>How Attention Detects Patterns</h4>
+<p>
+  In a transformer, the attention mechanism computes \(\text{softmax}(\mathbf{QK}^T/\sqrt{d_k})\) — this is a <strong>similarity matrix</strong> between every pair of tokens. High similarity means "these tokens are relevant to each other." The model learns the projection matrices \(\mathbf{W}^Q, \mathbf{W}^K\) such that semantically or syntactically related tokens have high dot-product similarity after projection. This is how a transformer discovers patterns like subject-verb agreement, coreference, and semantic relationships — <em>entirely from the training signal of next-token prediction</em>.
+</p>
+
+<h3>8.4 &ensp; What LLMs Actually Learn</h3>
+
+<p>
+  Recent interpretability research has revealed that transformer layers develop a hierarchy of increasingly abstract representations:
+</p>
+<p>
+  <strong>Early layers:</strong> encode surface-level patterns — token identity, local syntax, simple co-occurrence statistics.
+</p>
+<p>
+  <strong>Middle layers:</strong> encode semantic relationships — word meanings in context, entity types, relational knowledge ("Paris is-capital-of France").
+</p>
+<p>
+  <strong>Late layers:</strong> encode task-specific features — next-token predictions draw on abstract reasoning, world knowledge, and contextual understanding built by earlier layers.
+</p>
+
+<div class="intuition">
+  A large language model can be thought of as a giant, differentiable lookup table that has compressed the statistical structure of human language. The "patterns" it detects are not hand-coded rules but emergent statistical regularities — grammar, facts, reasoning strategies — all learned from the gradient signal of predicting the next token.
+</div>
+
+<div class="separator">· · ·</div>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     READING LIST & ROADMAP
+     ═══════════════════════════════════════════════════════════════ -->
+<div class="part-header" id="reading">
+  <div class="part-label">Appendix</div>
+  <h2>Annotated Reading List & Learning Roadmap</h2>
+</div>
+
+<h3>Essential Papers (in reading order)</h3>
+
+<table>
+  <tr><th>#</th><th>Paper</th><th>Year</th><th>Why It Matters</th></tr>
+  <tr><td>1</td><td>Rumelhart, Hinton & Williams — Backpropagation</td><td>1986</td><td>Made neural network training practical</td></tr>
+  <tr><td>2</td><td>LeCun et al. — LeNet / CNNs</td><td>1998</td><td>Proved deep learning works for vision</td></tr>
+  <tr><td>3</td><td>Hochreiter & Schmidhuber — LSTM</td><td>1997</td><td>Solved vanishing gradient for sequences</td></tr>
+  <tr><td>4</td><td>Mikolov et al. — Word2Vec</td><td>2013</td><td>Efficient word embeddings; word arithmetic</td></tr>
+  <tr><td>5</td><td>Pennington et al. — GloVe</td><td>2014</td><td>Global co-occurrence matrix factorization</td></tr>
+  <tr><td>6</td><td>Bahdanau et al. — Attention for NMT</td><td>2015</td><td>Introduced attention for seq2seq</td></tr>
+  <tr><td>7</td><td>Vaswani et al. — Transformer</td><td>2017</td><td>Replaced RNNs entirely; the foundation of LLMs</td></tr>
+  <tr><td>8</td><td>Devlin et al. — BERT</td><td>2019</td><td>Bidirectional pretraining; dominated NLU benchmarks</td></tr>
+  <tr><td>9</td><td>Radford et al. — GPT-2</td><td>2019</td><td>Showed language modeling scales to generation quality</td></tr>
+  <tr><td>10</td><td>Brown et al. — GPT-3</td><td>2020</td><td>In-context learning and few-shot capabilities at scale</td></tr>
+  <tr><td>11</td><td>Kaplan et al. — Scaling Laws</td><td>2020</td><td>Power-law relationships for compute-optimal training</td></tr>
+  <tr><td>12</td><td>Hoffmann et al. — Chinchilla</td><td>2022</td><td>Compute-optimal: more data, smaller model</td></tr>
+  <tr><td>13</td><td>Ouyang et al. — InstructGPT / RLHF</td><td>2022</td><td>Aligning models with human preferences</td></tr>
+  <tr><td>14</td><td>Touvron et al. — LLaMA</td><td>2023</td><td>Open-weight models competitive with proprietary</td></tr>
+  <tr><td>15</td><td>Rafailov et al. — DPO</td><td>2023</td><td>Simplified alignment without RL</td></tr>
+  <tr><td>16</td><td>DeepSeek Team — DeepSeek-V3</td><td>2024</td><td>MoE with fine-grained routing; open-weight frontier model</td></tr>
+</table>
+
+<h3>Recommended Learning Sequence</h3>
+
+<p><strong>Weeks 1–2:</strong> Master Parts I–II. Implement linear and logistic regression from scratch (just NumPy). Derive every gradient by hand.</p>
+
+<p><strong>Weeks 3–4:</strong> Master Part III. Implement a 2-layer neural network from scratch with backpropagation. Train it on MNIST.</p>
+
+<p><strong>Weeks 5–6:</strong> Study Part IV. Implement a simple CNN in PyTorch. Implement a character-level RNN language model.</p>
+
+<p><strong>Weeks 7–8:</strong> Study Parts V–VI. Read the Word2Vec and Transformer papers. Implement self-attention from scratch. Then implement a full transformer decoder in PyTorch.</p>
+
+<p><strong>Weeks 9–12:</strong> Study Part VII. Read GPT-2 and GPT-3 papers. Fine-tune a small LLM. Study MoE and RLHF architectures. Read DeepSeek papers.</p>
+
+<p><strong>Ongoing:</strong> Follow ArXiv for new developments. Join the Hugging Face community. Read interpretability papers (Olah, Elhage et al.) to understand <em>what</em> models learn, not just how they're trained.</p>
+
+<h3>Implementation Resources</h3>
+<p>
+  <strong>Karpathy's "Neural Networks: Zero to Hero"</strong> — YouTube series that builds GPT from scratch. <strong>Karpathy's nanoGPT</strong> — minimal GPT implementation in ~600 lines of PyTorch. <strong>Hugging Face Transformers</strong> — production-grade implementations of every major architecture. <strong>The Annotated Transformer</strong> (Rush, 2018) — line-by-line walkthrough of the original transformer code.
+</p>
+
+<div class="separator">· · ·</div>
+
+<div style="text-align:center; padding: 2rem 0; color: var(--text-secondary); font-family: 'Source Sans 3', sans-serif; font-size: 0.9rem;">
+  <em>Built as a comprehensive learning reference. Every equation tells a story — learn to read them and the papers will follow.</em>
+</div>
+
+</div><!-- .container -->
+
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+  renderMathInElement(document.body, {
+    delimiters: [
+      {left: "$$", right: "$$", display: true},
+      {left: "\\(", right: "\\)", display: false}
+    ],
+    throwOnError: false
+  });
+});
+</script>
+</body>
+</html>

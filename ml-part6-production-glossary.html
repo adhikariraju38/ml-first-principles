@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ML First Principles — Part VI: Production, Deployment & Research Landscape</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Crimson+Pro:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400;1,500&family=JetBrains+Mono:wght@400;500&family=Source+Sans+3:wght@300;400;500;600;700&display=swap');
+  :root{--bg:#faf8f5;--bg-alt:#f0ece6;--bg-code:#1e1e2e;--text:#1a1a1a;--text-secondary:#555;--accent:#7a4a8a;--accent-dark:#5a2a6a;--border:#d4cfc7;--math-bg:#fdfcfa;--exercise-bg:#eef4e8;--exercise-border:#6b8e4e;--paper-bg:#f5f0e8;--paper-border:#c4a97d;--insight-bg:#e8eef5;--insight-border:#4a6fa5;--deep-bg:#f5f0f8;--deep-border:#7a5ca5;--impl-bg:#f0f5f0;--impl-border:#3a7a5a;--warning-bg:#fdf0e0;--warning-border:#d4940a}
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{font-family:'Crimson Pro',Georgia,serif;font-size:19px;line-height:1.72;color:var(--text);background:var(--bg);-webkit-font-smoothing:antialiased}
+  .container{max-width:820px;margin:0 auto;padding:3rem 2rem 6rem}
+  .hero{text-align:center;padding:4rem 0 3rem;border-bottom:3px double var(--border);margin-bottom:3rem}
+  .hero h1{font-family:'Crimson Pro',serif;font-weight:700;font-size:2.4rem;line-height:1.2;color:var(--accent-dark);letter-spacing:-0.02em;margin-bottom:0.5rem}
+  .hero .subtitle{font-family:'Source Sans 3',sans-serif;font-weight:300;font-size:1.05rem;color:var(--text-secondary);letter-spacing:0.04em;text-transform:uppercase}
+  .toc{background:var(--bg-alt);border:1px solid var(--border);border-radius:4px;padding:2rem 2.5rem;margin-bottom:3rem}
+  .toc h2{font-family:'Source Sans 3',sans-serif;font-weight:700;font-size:1rem;text-transform:uppercase;letter-spacing:0.12em;color:var(--accent);margin-bottom:1rem}
+  .toc ol{list-style:none;counter-reset:tc}.toc>ol>li{counter-increment:tc;margin-bottom:0.3rem}.toc>ol>li::before{content:counter(tc) ". ";font-weight:600;color:var(--accent)}
+  .toc a{color:var(--text);text-decoration:none;font-size:1rem;font-family:'Source Sans 3',sans-serif}
+  .toc .sub{padding-left:2rem;margin-top:0.2rem}.toc .sub li{font-size:0.92rem;color:var(--text-secondary);margin-bottom:0.15rem}
+  .part-header{text-align:center;padding:3rem 0 1.5rem;margin:4rem 0 2rem;border-top:3px double var(--border)}
+  .part-header .part-label{font-family:'Source Sans 3',sans-serif;font-weight:700;text-transform:uppercase;letter-spacing:0.2em;font-size:0.8rem;color:var(--accent)}
+  .part-header h2{font-family:'Crimson Pro',serif;font-weight:700;font-size:2rem;color:var(--accent-dark);margin-top:0.3rem}
+  h3{font-family:'Crimson Pro',serif;font-weight:600;font-size:1.5rem;color:var(--accent-dark);margin:3rem 0 1rem;padding-bottom:0.3rem;border-bottom:1px solid var(--border)}
+  h4{font-family:'Source Sans 3',sans-serif;font-weight:600;font-size:1.05rem;color:var(--text);margin:2rem 0 0.7rem;text-transform:uppercase;letter-spacing:0.06em}
+  h5{font-family:'Source Sans 3',sans-serif;font-weight:600;font-size:0.95rem;color:var(--accent);margin:1.5rem 0 0.5rem}
+  p{margin-bottom:1rem}strong{font-weight:600}em{font-style:italic}
+  .math-block{background:var(--math-bg);border-left:3px solid var(--accent);padding:1.2rem 1.5rem;margin:1.5rem 0;overflow-x:auto;border-radius:0 4px 4px 0}
+  .math-block .label{font-family:'Source Sans 3',sans-serif;font-size:0.78rem;font-weight:600;text-transform:uppercase;letter-spacing:0.1em;color:var(--accent);display:block;margin-bottom:0.5rem}
+  .intuition{background:var(--insight-bg);border-left:3px solid var(--insight-border);padding:1.2rem 1.5rem;margin:1.5rem 0;border-radius:0 4px 4px 0}
+  .intuition::before{content:"💡 Intuition";font-family:'Source Sans 3',sans-serif;font-size:0.78rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--insight-border);display:block;margin-bottom:0.5rem}
+  .deep{background:var(--deep-bg);border-left:3px solid var(--deep-border);padding:1.2rem 1.5rem;margin:1.5rem 0;border-radius:0 4px 4px 0}
+  .deep::before{content:"🔬 Deep Dive";font-family:'Source Sans 3',sans-serif;font-size:0.78rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--deep-border);display:block;margin-bottom:0.5rem}
+  .impl{background:var(--impl-bg);border-left:3px solid var(--impl-border);padding:1.2rem 1.5rem;margin:1.5rem 0;border-radius:0 4px 4px 0}
+  .impl::before{content:"🔧 Practical";font-family:'Source Sans 3',sans-serif;font-size:0.78rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--impl-border);display:block;margin-bottom:0.5rem}
+  .paper-ref{background:var(--paper-bg);border-left:3px solid var(--paper-border);padding:1.2rem 1.5rem;margin:1.5rem 0;border-radius:0 4px 4px 0}
+  .paper-ref::before{content:"📄 Reference";font-family:'Source Sans 3',sans-serif;font-size:0.78rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--paper-border);display:block;margin-bottom:0.5rem}
+  .warning{background:var(--warning-bg);border-left:3px solid var(--warning-border);padding:1.2rem 1.5rem;margin:1.5rem 0;border-radius:0 4px 4px 0}
+  .warning::before{content:"⚠️ Important";font-family:'Source Sans 3',sans-serif;font-size:0.78rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--warning-border);display:block;margin-bottom:0.5rem}
+  code{font-family:'JetBrains Mono',monospace;font-size:0.85em;background:var(--bg-alt);padding:0.15em 0.4em;border-radius:3px}
+  pre{background:var(--bg-code);color:#cdd6f4;padding:1.2rem 1.5rem;border-radius:4px;overflow-x:auto;margin:1.5rem 0;font-family:'JetBrains Mono',monospace;font-size:0.8rem;line-height:1.55}
+  table{width:100%;border-collapse:collapse;margin:1.5rem 0;font-size:0.95rem}
+  th,td{padding:0.6rem 1rem;text-align:left;border-bottom:1px solid var(--border)}
+  th{font-family:'Source Sans 3',sans-serif;font-weight:600;font-size:0.82rem;text-transform:uppercase;letter-spacing:0.08em;color:var(--accent-dark);border-bottom:2px solid var(--accent)}
+  .separator{text-align:center;margin:3rem 0;color:var(--border);letter-spacing:0.5em}
+  .ascii-diagram{background:var(--bg-alt);border:1px solid var(--border);padding:1.5rem;margin:1.5rem 0;border-radius:4px;font-family:'JetBrains Mono',monospace;font-size:0.75rem;line-height:1.4;white-space:pre;overflow-x:auto}
+  .glossary-term{font-weight:600;color:var(--accent-dark);margin-top:0.8rem}
+  .glossary-def{margin-left:1.5rem;margin-bottom:0.6rem;font-size:0.95rem}
+  .katex-display{margin:0.8rem 0!important}.katex{font-size:1.05em}
+  @media(max-width:700px){.container{padding:1.5rem 1rem 4rem}.hero h1{font-size:1.8rem}body{font-size:17px}}
+</style>
+</head>
+<body>
+<style>
+.course-nav{position:sticky;top:0;z-index:1000;background:#1a1a2e;padding:10px 20px;display:flex;justify-content:space-between;align-items:center;font-family:'Source Sans 3',sans-serif;font-size:0.9rem;box-shadow:0 2px 8px rgba(0,0,0,0.15)}
+.course-nav a{color:#ccc;text-decoration:none;transition:color 0.2s}
+.course-nav a:hover{color:#fff}
+.course-nav .nav-home{font-weight:600;color:#fff}
+.course-nav .nav-prev,.course-nav .nav-next{min-width:120px}
+.course-nav .nav-next{text-align:right}
+</style>
+<nav class="course-nav">
+<div class="nav-prev"><a href="ml-part5-theory.html">&larr; Part V: Theory</a></div>
+<div><a href="index.html" class="nav-home">ML First Principles</a></div>
+<div class="nav-next"><a href="ml-part7-end-to-end-projects.html">Part VII: Projects &rarr;</a></div>
+</nav>
+<div class="container">
+
+<div class="hero">
+  <div class="subtitle">Part VI — From Lab to Production</div>
+  <h1>Production ML, Deployment<br>& The Research Landscape</h1>
+  <p style="margin-top:1rem;color:var(--text-secondary);font-size:0.95rem;">
+    Serving at scale, the open-source ecosystem, safety & alignment,<br>
+    how to read papers, and a complete glossary of 150+ terms.
+  </p>
+</div>
+
+<div class="toc">
+  <h2>Contents</h2>
+  <ol>
+    <li><a href="#s1">Serving LLMs at Scale</a>
+      <ul class="sub"><li>Inference optimization · Batching · KV cache management · Serving frameworks</li></ul>
+    </li>
+    <li><a href="#s2">The Open-Source Ecosystem</a>
+      <ul class="sub"><li>Model families · Hugging Face · Training frameworks · Evaluation suites</li></ul>
+    </li>
+    <li><a href="#s3">Safety, Alignment & Ethics</a>
+      <ul class="sub"><li>Alignment tax · Red teaming · Jailbreaks · Scalable oversight</li></ul>
+    </li>
+    <li><a href="#s4">Agentic AI & Tool Use</a>
+      <ul class="sub"><li>Function calling · ReAct · Multi-step reasoning · MCP protocol</li></ul>
+    </li>
+    <li><a href="#s5">How to Read ML Research Papers</a>
+      <ul class="sub"><li>Anatomy of a paper · Reading strategies · Critical evaluation</li></ul>
+    </li>
+    <li><a href="#s6">The Complete Timeline of Modern ML</a>
+      <ul class="sub"><li>2012–2026 chronology of key breakthroughs</li></ul>
+    </li>
+    <li><a href="#s7">Comprehensive Glossary</a>
+      <ul class="sub"><li>150+ terms with precise definitions and cross-references</li></ul>
+    </li>
+  </ol>
+</div>
+
+
+<!-- ═══════════════════════ 1 ═══════════════════════ -->
+<div class="part-header" id="s1">
+  <div class="part-label">Chapter 1</div>
+  <h2>Serving LLMs at Scale</h2>
+</div>
+
+<h3>The Inference Challenge</h3>
+<p>Training happens once; inference happens millions of times. Optimizing inference cost-per-token is often more impactful than training improvements.</p>
+
+<h4>Prefill vs Decode Phases</h4>
+<div class="ascii-diagram">
+ PREFILL PHASE (prompt processing)          DECODE PHASE (generation)
+ ┌─────────────────────────────┐           ┌──────────────────────┐
+ │ Process entire prompt at    │           │ Generate one token   │
+ │ once in a single forward    │           │ at a time, each      │
+ │ pass. Compute-bound.        │──────────→│ requiring a forward  │
+ │                             │           │ pass. Memory-bound.  │
+ │ Time: O(n · d²)             │           │ Time: O(d²) per tok  │
+ └─────────────────────────────┘           └──────────────────────┘
+</div>
+
+<p><strong>Prefill</strong> is compute-bound (matrix multiplications dominate). <strong>Decode</strong> is memory-bandwidth-bound (loading weights from HBM for each token dominates). Different optimizations target each phase.</p>
+
+<h3>Continuous Batching</h3>
+<p>Naive batching waits until all sequences in a batch finish before starting new ones. <strong>Continuous batching</strong> (also called "in-flight batching") immediately fills empty slots as sequences complete, keeping GPU utilization high.</p>
+
+<h3>Paged Attention (vLLM)</h3>
+<div class="paper-ref">
+  <strong>Kwon et al. (2023)</strong> — "Efficient Memory Management for Large Language Model Serving with PagedAttention." Borrowed virtual memory concepts from OS design to manage the KV cache. Instead of contiguous allocation per sequence, KV cache is stored in non-contiguous pages, reducing memory waste from 60–80% to near-zero.
+</div>
+
+<h3>Serving Frameworks</h3>
+<table>
+  <tr><th>Framework</th><th>Key Feature</th><th>Best For</th></tr>
+  <tr><td>vLLM</td><td>PagedAttention, continuous batching</td><td>High-throughput serving</td></tr>
+  <tr><td>TensorRT-LLM</td><td>NVIDIA kernel optimization</td><td>Maximum NVIDIA GPU perf</td></tr>
+  <tr><td>llama.cpp</td><td>CPU/Apple Silicon inference, GGUF</td><td>Local/edge deployment</td></tr>
+  <tr><td>Ollama</td><td>User-friendly local LLM runner</td><td>Development & testing</td></tr>
+  <tr><td>SGLang</td><td>Structured generation, RadixAttention</td><td>Complex prompting pipelines</td></tr>
+  <tr><td>TGI (HuggingFace)</td><td>Easy deployment, quantization</td><td>Production HF models</td></tr>
+</table>
+
+<h3>Cost Optimization</h3>
+<div class="math-block">
+  <span class="label">Inference Cost Estimation</span>
+  $$\text{Cost per 1M tokens} \approx \frac{\text{GPU cost/hour} \times 10^6}{\text{tokens/sec} \times 3600}$$
+</div>
+<p>A 70B model on 1× A100 generates ~30 tokens/sec. At $2/GPU-hour: ~$18.5 per million tokens. With INT4 quantization + continuous batching + speculative decoding: 3–5× improvement → $4–6 per million tokens.</p>
+
+<div class="separator">· · ·</div>
+
+
+<!-- ═══════════════════════ 2 ═══════════════════════ -->
+<div class="part-header" id="s2">
+  <div class="part-label">Chapter 2</div>
+  <h2>The Open-Source Ecosystem</h2>
+</div>
+
+<h3>Major Open-Weight Model Families (as of early 2026)</h3>
+<table>
+  <tr><th>Family</th><th>Organization</th><th>Sizes</th><th>Highlights</th></tr>
+  <tr><td>LLaMA 3</td><td>Meta</td><td>8B, 70B, 405B</td><td>Strong general-purpose; permissive license</td></tr>
+  <tr><td>Qwen 2.5/3</td><td>Alibaba</td><td>0.5B–72B</td><td>Strong multilingual; excellent coding</td></tr>
+  <tr><td>Mistral / Mixtral</td><td>Mistral AI</td><td>7B, 8×7B, 8×22B</td><td>Sliding window attention; MoE pioneers</td></tr>
+  <tr><td>DeepSeek V3/R1</td><td>DeepSeek</td><td>67B, 236B (MoE)</td><td>Fine-grained MoE; strong reasoning</td></tr>
+  <tr><td>Gemma 2</td><td>Google</td><td>2B, 9B, 27B</td><td>Knowledge distillation from Gemini</td></tr>
+  <tr><td>Phi-3/4</td><td>Microsoft</td><td>3.8B, 14B</td><td>Small models trained on synthetic data</td></tr>
+  <tr><td>Command R+</td><td>Cohere</td><td>104B</td><td>Strong RAG capabilities</td></tr>
+</table>
+
+<h3>The Hugging Face Stack</h3>
+<p><strong>Transformers:</strong> Unified API for loading and using any model. <strong>Datasets:</strong> Streaming access to thousands of datasets. <strong>PEFT:</strong> LoRA/QLoRA/Prefix tuning wrappers. <strong>TRL:</strong> Training with reinforcement learning (RLHF, DPO). <strong>Accelerate:</strong> Multi-GPU/multi-node training without code changes. <strong>Spaces:</strong> Deploy demos instantly.</p>
+
+<h3>Training Frameworks</h3>
+<table>
+  <tr><th>Framework</th><th>Scale</th><th>Key Feature</th></tr>
+  <tr><td>PyTorch (native)</td><td>1–8 GPUs</td><td>Flexibility; research standard</td></tr>
+  <tr><td>DeepSpeed</td><td>8–1000s GPUs</td><td>ZeRO optimizer; massive model training</td></tr>
+  <tr><td>FSDP (PyTorch)</td><td>8–100s GPUs</td><td>Native PyTorch distributed; simpler than DeepSpeed</td></tr>
+  <tr><td>Megatron-LM</td><td>100s–1000s GPUs</td><td>Tensor + pipeline parallelism; frontier model training</td></tr>
+  <tr><td>Axolotl</td><td>1–8 GPUs</td><td>Easy fine-tuning config; great for LoRA</td></tr>
+  <tr><td>LitGPT</td><td>1–many GPUs</td><td>Clear, hackable GPT implementations</td></tr>
+</table>
+
+<div class="separator">· · ·</div>
+
+
+<!-- ═══════════════════════ 3 ═══════════════════════ -->
+<div class="part-header" id="s3">
+  <div class="part-label">Chapter 3</div>
+  <h2>Safety, Alignment & Ethics</h2>
+</div>
+
+<h3>The Alignment Problem</h3>
+<div class="intuition">
+  A superintelligent model that optimizes the wrong objective is more dangerous than a dumb one. Alignment research asks: how do we ensure AI systems do what we actually want, not just what we literally asked for?
+</div>
+
+<h4>Current Alignment Techniques</h4>
+<table>
+  <tr><th>Technique</th><th>Mechanism</th><th>Limitation</th></tr>
+  <tr><td>RLHF</td><td>Train reward model from preferences, optimize with RL</td><td>Reward hacking; human label noise</td></tr>
+  <tr><td>DPO</td><td>Directly optimize preference pairs without reward model</td><td>Limited to pairwise comparisons</td></tr>
+  <tr><td>Constitutional AI</td><td>Self-critique against principles + RLAIF</td><td>Quality of constitution matters</td></tr>
+  <tr><td>Red teaming</td><td>Adversarial testing for failures</td><td>Can't cover all failure modes</td></tr>
+  <tr><td>Input/output filters</td><td>Classifier-based content moderation</td><td>Cat-and-mouse with adversaries</td></tr>
+</table>
+
+<h4>Open Problems in Safety</h4>
+<p><strong>Scalable oversight:</strong> How do humans supervise AI systems on tasks that exceed human capability? Current approach: use AI to help humans evaluate AI outputs (recursive reward modeling, debate).</p>
+<p><strong>Deceptive alignment:</strong> Could a model learn to appear aligned during training/evaluation but pursue different goals in deployment? This is a theoretical concern for future, more capable systems.</p>
+<p><strong>Dual use:</strong> The same capabilities that make LLMs helpful (biological knowledge, coding ability, persuasion) also enable misuse. How do you distribute capabilities widely while limiting harm?</p>
+
+<div class="separator">· · ·</div>
+
+
+<!-- ═══════════════════════ 4 ═══════════════════════ -->
+<div class="part-header" id="s4">
+  <div class="part-label">Chapter 4</div>
+  <h2>Agentic AI & Tool Use</h2>
+</div>
+
+<h3>From Chat to Agents</h3>
+<p>An <strong>agent</strong> is an LLM that can take actions in the world — calling APIs, searching the web, writing and running code, managing files — in a loop until a task is complete.</p>
+
+<h4>The ReAct Pattern</h4>
+<div class="paper-ref">
+  <strong>Yao et al. (2022)</strong> — "ReAct: Synergizing Reasoning and Acting in Language Models." Interleave reasoning (chain-of-thought) with acting (tool calls). The model thinks about what to do, does it, observes the result, and reasons about the next step.
+</div>
+
+<div class="ascii-diagram">
+ ┌─────────────────────────────────────────────────┐
+ │  User: "What's the weather in the city where    │
+ │         the Eiffel Tower is located?"            │
+ │                                                  │
+ │  LLM Thought: I need to find the city first,    │
+ │  then get weather.                               │
+ │                                                  │
+ │  Action: search("Eiffel Tower location")         │
+ │  Observation: Paris, France                      │
+ │                                                  │
+ │  Thought: Now I know it's Paris. Get weather.    │
+ │  Action: get_weather("Paris, France")            │
+ │  Observation: 18°C, partly cloudy                │
+ │                                                  │
+ │  Answer: It's 18°C and partly cloudy in Paris.   │
+ └─────────────────────────────────────────────────┘
+</div>
+
+<h4>Function Calling / Tool Use</h4>
+<p>Modern LLMs are trained to output structured tool calls:</p>
+<pre>{
+  "tool": "search",
+  "arguments": {"query": "current weather Paris France"}
+}</pre>
+<p>The framework executes the tool, feeds the result back, and the LLM continues. This is the foundation of AI assistants, coding agents, and autonomous workflows.</p>
+
+<h4>Multi-Step Planning</h4>
+<p>Complex tasks require decomposition. Research approaches include hierarchical planning (high-level plan → subtasks → tool calls), inner monologue (the model generates reasoning traces that guide its actions), and reflection (the model evaluates its own outputs and retries on failure).</p>
+
+<div class="separator">· · ·</div>
+
+
+<!-- ═══════════════════════ 5 ═══════════════════════ -->
+<div class="part-header" id="s5">
+  <div class="part-label">Chapter 5</div>
+  <h2>How to Read ML Research Papers</h2>
+</div>
+
+<h3>Anatomy of an ML Paper</h3>
+<table>
+  <tr><th>Section</th><th>What to Look For</th><th>Time Allocation</th></tr>
+  <tr><td>Abstract</td><td>Main claim and result. Does this paper matter to you?</td><td>2 min</td></tr>
+  <tr><td>Introduction</td><td>Problem motivation. What gap does this fill?</td><td>5 min</td></tr>
+  <tr><td>Figures/Tables</td><td>Architecture diagrams, result tables. The visual story.</td><td>5 min (first pass)</td></tr>
+  <tr><td>Method</td><td>The new equations and algorithms. This is the core.</td><td>30+ min</td></tr>
+  <tr><td>Experiments</td><td>Baselines, ablations. What actually matters?</td><td>15 min</td></tr>
+  <tr><td>Related Work</td><td>How this fits in the field. New papers to read.</td><td>5 min</td></tr>
+  <tr><td>Conclusion</td><td>Authors' honest assessment of limitations.</td><td>3 min</td></tr>
+</table>
+
+<h3>The Three-Pass Method</h3>
+<p><strong>Pass 1 (10 min):</strong> Abstract, intro, section headings, figures, conclusion. Decide if you need to read deeper.</p>
+<p><strong>Pass 2 (1 hour):</strong> Read everything except proofs. Understand the main ideas, mark equations you don't follow. Write a one-paragraph summary.</p>
+<p><strong>Pass 3 (2–4 hours):</strong> Work through the math. Re-derive key equations. Identify assumptions and limitations. Think about what you'd do differently.</p>
+
+<h3>Red Flags to Watch For</h3>
+<p><strong>No ablation study:</strong> You can't tell which components matter. <strong>Cherry-picked metrics:</strong> Reporting only metrics where the method wins. <strong>Missing baselines:</strong> Comparing against outdated or weak baselines. <strong>No error bars or confidence intervals:</strong> Results might not be significant. <strong>Excessive reliance on a single benchmark:</strong> May not generalize. <strong>Unreproducible:</strong> No code, no hyperparameter details, vague dataset description.</p>
+
+<div class="impl">
+  <strong>Practical tip:</strong> When reading a paper, ask these three questions:<br>
+  1. <em>What is the simplest possible baseline for this task?</em> How much better is the proposed method?<br>
+  2. <em>What assumptions does this method make?</em> When would they fail?<br>
+  3. <em>Could I implement this in a weekend?</em> If not, which parts are engineering vs. research novelty?
+</div>
+
+<div class="separator">· · ·</div>
+
+
+<!-- ═══════════════════════ 6 ═══════════════════════ -->
+<div class="part-header" id="s6">
+  <div class="part-label">Chapter 6</div>
+  <h2>The Complete Timeline of Modern ML</h2>
+</div>
+
+<table>
+  <tr><th>Year</th><th>Milestone</th><th>Why It Matters</th></tr>
+  <tr><td>2012</td><td>AlexNet wins ImageNet</td><td>Deep learning goes mainstream; GPU training era begins</td></tr>
+  <tr><td>2013</td><td>Word2Vec</td><td>Efficient word embeddings; word arithmetic</td></tr>
+  <tr><td>2014</td><td>GloVe, GANs, Seq2Seq + Attention</td><td>Three foundational ideas in one year</td></tr>
+  <tr><td>2015</td><td>ResNet, Batch Norm, Bahdanau Attention</td><td>Training very deep nets; attention for translation</td></tr>
+  <tr><td>2017</td><td>"Attention Is All You Need"</td><td>Transformer replaces RNNs; the modern era begins</td></tr>
+  <tr><td>2018</td><td>GPT-1, BERT, ELMo</td><td>Pretraining + fine-tuning paradigm established</td></tr>
+  <tr><td>2019</td><td>GPT-2, T5, DistilBERT</td><td>Scaling up; text-to-text unification; distillation</td></tr>
+  <tr><td>2020</td><td>GPT-3, Scaling Laws, ViT, DDPM</td><td>In-context learning; scaling theory; vision transformers</td></tr>
+  <tr><td>2021</td><td>CLIP, Codex, LoRA</td><td>Multimodal; code generation; efficient fine-tuning</td></tr>
+  <tr><td>2022</td><td>ChatGPT, Chinchilla, Stable Diffusion, InstructGPT</td><td>LLMs go mainstream; compute-optimal training; text-to-image</td></tr>
+  <tr><td>2023</td><td>GPT-4, LLaMA, QLoRA, DPO, Mistral, Mamba</td><td>Multimodal GPT; open models; efficient alignment; SSMs</td></tr>
+  <tr><td>2024</td><td>Claude 3, Gemini 1.5, LLaMA 3, o1, DeepSeek-V3</td><td>Long context; reasoning models; open MoE at frontier</td></tr>
+  <tr><td>2025</td><td>DeepSeek-R1, Claude 3.5/4, o3, Gemini 2</td><td>Open reasoning models; test-time compute scaling</td></tr>
+</table>
+
+<div class="separator">· · ·</div>
+
+
+<!-- ═══════════════════════ 7 ═══════════════════════ -->
+<div class="part-header" id="s7">
+  <div class="part-label">Reference</div>
+  <h2>Comprehensive Glossary</h2>
+</div>
+
+<p><em>Every important term from all six volumes, with precise definitions. Terms in <strong>bold</strong> have their own entries.</em></p>
+
+<h3>A</h3>
+<p class="glossary-term">Activation function</p>
+<p class="glossary-def">Nonlinear function applied element-wise after a linear transformation. Common: <strong>ReLU</strong>, <strong>GELU</strong>, <strong>sigmoid</strong>, <strong>tanh</strong>. Enables networks to learn nonlinear relationships. [Part I §3.1]</p>
+
+<p class="glossary-term">Adam / AdamW</p>
+<p class="glossary-def">Adaptive optimizer combining <strong>momentum</strong> (first moment) and <strong>RMSProp</strong> (second moment) with bias correction. AdamW decouples <strong>weight decay</strong> from the gradient update. Standard optimizer for LLM training. [Part II §VIII]</p>
+
+<p class="glossary-term">Attention</p>
+<p class="glossary-def">Mechanism that computes weighted combinations of values based on query-key similarity: \(\text{softmax}(\mathbf{QK}^T/\sqrt{d_k})\mathbf{V}\). Foundation of the <strong>transformer</strong>. [Part I §6.1]</p>
+
+<p class="glossary-term">Autoregressive</p>
+<p class="glossary-def">Generating outputs one token at a time, where each token conditions on all previous tokens. \(P(x_t \mid x_{<t})\). How <strong>GPT</strong> and all decoder-only LLMs work. [Part I §7.1]</p>
+
+<h3>B</h3>
+<p class="glossary-term">Backpropagation</p>
+<p class="glossary-def">Algorithm for computing gradients in neural networks by recursive application of the <strong>chain rule</strong> from output to input. [Part I §3.3, Part II §I]</p>
+
+<p class="glossary-term">BERT</p>
+<p class="glossary-def">Bidirectional Encoder Representations from Transformers. Encoder-only model trained with <strong>masked language modeling</strong>. Excels at understanding tasks. [Part II §VI]</p>
+
+<p class="glossary-term">BPE (Byte Pair Encoding)</p>
+<p class="glossary-def">Subword tokenization algorithm that iteratively merges the most frequent character pairs. Used by GPT, LLaMA, and most modern LLMs. [Part I §5.1, Part II §IV]</p>
+
+<h3>C</h3>
+<p class="glossary-term">Causal mask</p>
+<p class="glossary-def">Lower-triangular mask that prevents attention from "seeing the future." Applied in decoder-only transformers. Sets future positions to \(-\infty\) before softmax. [Part I §6.4]</p>
+
+<p class="glossary-term">Chain-of-thought (CoT)</p>
+<p class="glossary-def">Prompting technique that elicits step-by-step reasoning. Converts fixed-depth computation into O(T) serial computation. [Part III §IV]</p>
+
+<p class="glossary-term">Cross-entropy</p>
+<p class="glossary-def">\(H(p, q) = -\sum p(x) \log q(x)\). The standard loss function for classification. Equals negative log-likelihood under categorical distribution. Equivalent to <strong>KL divergence</strong> plus a constant. [Part I §2.2, Part V §1]</p>
+
+<h3>D</h3>
+<p class="glossary-term">Diffusion model</p>
+<p class="glossary-def">Generative model that learns to reverse a gradual noising process. Trained to predict noise added to data. State-of-the-art for image generation (Stable Diffusion, DALL-E 3). [Part V §4]</p>
+
+<p class="glossary-term">DPO (Direct Preference Optimization)</p>
+<p class="glossary-def">Alignment method that skips reward model training, directly optimizing the policy from preference pairs. Simpler alternative to <strong>RLHF</strong>. [Part I §7.5]</p>
+
+<p class="glossary-term">Dropout</p>
+<p class="glossary-def">Regularization: randomly zero out neurons during training with probability \(p\). Trains an implicit ensemble; prevents co-adaptation. [Part II §VII]</p>
+
+<h3>E–F</h3>
+<p class="glossary-term">ELBO (Evidence Lower Bound)</p>
+<p class="glossary-def">Lower bound on the log-likelihood used to train <strong>VAEs</strong>: reconstruction + KL regularization. [Part V §2]</p>
+
+<p class="glossary-term">Embedding</p>
+<p class="glossary-def">Dense vector representation of a discrete object (word, token, image patch). Learned during training. Similar items get nearby vectors. [Part I §5.1]</p>
+
+<p class="glossary-term">Entropy</p>
+<p class="glossary-def">\(H(X) = -\sum p(x) \log p(x)\). Average surprise/information in a distribution. Lower = more certain. [Part V §1]</p>
+
+<p class="glossary-term">Flash Attention</p>
+<p class="glossary-def">IO-aware attention algorithm that reduces memory from \(O(n^2)\) to \(O(n)\) via tiling and online softmax, with identical results to standard attention. [Part III §I]</p>
+
+<h3>G–H</h3>
+<p class="glossary-term">GAN</p>
+<p class="glossary-def">Generative Adversarial Network. Generator vs. discriminator in a minimax game. Generator learns to produce realistic data. [Part V §3]</p>
+
+<p class="glossary-term">Gradient descent</p>
+<p class="glossary-def">\(\theta \leftarrow \theta - \eta \nabla\mathcal{L}\). Iterative optimization that moves parameters in the direction of steepest loss decrease. [Part I §1.3]</p>
+
+<p class="glossary-term">GQA (Grouped-Query Attention)</p>
+<p class="glossary-def">Multiple query heads share K/V projections, reducing KV cache memory during inference. Used in LLaMA 3, Gemma 2. [Part I §7.3]</p>
+
+<h3>I–K</h3>
+<p class="glossary-term">In-context learning</p>
+<p class="glossary-def">LLM performs a task by conditioning on examples in the prompt, without gradient updates. Emergent ability at scale. [GPT-3, Part I §7.1]</p>
+
+<p class="glossary-term">KL divergence</p>
+<p class="glossary-def">\(D_{\text{KL}}(p \| q) = \sum p(x) \log(p(x)/q(x))\). Non-symmetric measure of difference between distributions. Minimized during training (= MLE). [Part V §1]</p>
+
+<p class="glossary-term">KV cache</p>
+<p class="glossary-def">Cache storing key and value vectors from previous tokens during autoregressive generation. Avoids recomputation. Major memory consumer during inference. [Part II §V]</p>
+
+<h3>L–M</h3>
+<p class="glossary-term">LayerNorm</p>
+<p class="glossary-def">Normalization across the feature dimension for each individual example. Standard in transformers. Pre-norm variant applied before sublayers. [Part II §VII]</p>
+
+<p class="glossary-term">LoRA</p>
+<p class="glossary-def">Low-Rank Adaptation. Adds small trainable rank-\(r\) matrices \(\mathbf{BA}\) to frozen pretrained weights. Enables fine-tuning with 0.1–1% of parameters. [Part III §II, Part IV §10]</p>
+
+<p class="glossary-term">MLE (Maximum Likelihood Estimation)</p>
+<p class="glossary-def">Find parameters that maximize probability of observed data. Unifying principle: MSE (Gaussian), cross-entropy (Bernoulli/categorical) are all MLE. [Part I §1.2]</p>
+
+<p class="glossary-term">MoE (Mixture of Experts)</p>
+<p class="glossary-def">Architecture where a router selects top-K expert networks per token. Increases capacity without proportional compute increase. Used in Mixtral, DeepSeek-V3. [Part I §7.4]</p>
+
+<h3>N–P</h3>
+<p class="glossary-term">Perplexity</p>
+<p class="glossary-def">\(\text{PPL} = \exp(\mathcal{L}_{\text{CE}})\). Fundamental LM metric: how "surprised" the model is. PPL of 10 means effective vocabulary of 10 per position. Lower is better. [Part III §VII]</p>
+
+<p class="glossary-term">Positional encoding</p>
+<p class="glossary-def">Mechanism to inject sequence position information into transformers. Sinusoidal (original), learned, or <strong>RoPE</strong> (rotary). [Part I §6.4]</p>
+
+<h3>Q–R</h3>
+<p class="glossary-term">Quantization</p>
+<p class="glossary-def">Reducing numerical precision (FP16 → INT8 → INT4) to decrease memory and increase inference speed. Methods: GPTQ, AWQ, GGUF. [Part III §III]</p>
+
+<p class="glossary-term">RAG (Retrieval-Augmented Generation)</p>
+<p class="glossary-def">Architecture combining a retriever (finds relevant documents) with an LLM generator. Reduces hallucinations, enables current knowledge. [Part III §V]</p>
+
+<p class="glossary-term">ReLU</p>
+<p class="glossary-def">\(\max(0, z)\). Simplest activation function. Derivative is 0 or 1, enabling good gradient flow. Default for hidden layers. [Part I §3.1]</p>
+
+<p class="glossary-term">Residual connection</p>
+<p class="glossary-def">\(\mathbf{x} + f(\mathbf{x})\). Skip connection that adds the input to the output of a sublayer. Critical for training deep networks — ensures gradient \(\geq 1\). [Part I §6.4]</p>
+
+<p class="glossary-term">RLHF</p>
+<p class="glossary-def">Reinforcement Learning from Human Feedback. Train reward model from preferences, then optimize policy with RL (PPO). How ChatGPT was aligned. [Part I §7.5]</p>
+
+<p class="glossary-term">RoPE (Rotary Position Embedding)</p>
+<p class="glossary-def">Encodes relative position by rotating query/key vectors. Attention score depends on \(m - n\), not absolute positions. Used in LLaMA, Qwen, most modern LLMs. [Part I §7.3]</p>
+
+<h3>S</h3>
+<p class="glossary-term">Scaling laws</p>
+<p class="glossary-def">Power-law relationships between model performance and compute/data/parameters. Guide compute-optimal training. Chinchilla: ~20 tokens per parameter. [Part I §7.2]</p>
+
+<p class="glossary-term">Self-attention</p>
+<p class="glossary-def">Attention where Q, K, V all come from the same sequence: \(\mathbf{Q} = \mathbf{XW}^Q\), etc. Each token attends to all others. [Part I §6.2]</p>
+
+<p class="glossary-term">Softmax</p>
+<p class="glossary-def">\(\text{softmax}(z_i) = e^{z_i} / \sum_j e^{z_j}\). Converts logits to probabilities. Used in attention weights and output layer. [Part I §1.2]</p>
+
+<p class="glossary-term">Speculative decoding</p>
+<p class="glossary-def">Use small draft model to propose multiple tokens, verify in parallel with large model. Mathematically equivalent output, 2–3× faster. [Part III §VIII]</p>
+
+<h3>T–V</h3>
+<p class="glossary-term">Transformer</p>
+<p class="glossary-def">Architecture built on self-attention + FFN with residual connections and layer norm. Encoder, decoder, or encoder-decoder variants. Foundation of all modern LLMs. [Part I §6.4]</p>
+
+<p class="glossary-term">VAE (Variational Autoencoder)</p>
+<p class="glossary-def">Generative model with encoder (infers latent variables) and decoder (generates from latents). Trained by maximizing the <strong>ELBO</strong>. [Part V §2]</p>
+
+<p class="glossary-term">ViT (Vision Transformer)</p>
+<p class="glossary-def">Applies transformer to images by splitting into patches treated as tokens. Foundation of modern vision models and multimodal architectures. [Part III §VI]</p>
+
+<h3>W–Z</h3>
+<p class="glossary-term">Weight decay</p>
+<p class="glossary-def">Regularization that shrinks weights by a factor each step: \(w \leftarrow w(1 - \eta\lambda)\). Equivalent to L2 regularization for SGD. Decoupled in AdamW. [Part II §VII]</p>
+
+<p class="glossary-term">Word2Vec</p>
+<p class="glossary-def">Skip-gram or CBOW model for learning word embeddings. Trained to predict context words from center word (or vice versa). [Part I §5.1]</p>
+
+<p class="glossary-term">Zero-shot / Few-shot</p>
+<p class="glossary-def">Performing a task with zero or few examples in the prompt. Emergent capability of large language models. "Zero-shot": just a task description. "Few-shot": a handful of input-output examples.</p>
+
+
+<div class="separator">· · ·</div>
+
+<div style="text-align:center;padding:3rem 0;border-top:3px double var(--border);margin-top:3rem;">
+  <h3 style="font-family:'Crimson Pro',serif;font-weight:700;color:var(--accent-dark);font-size:1.6rem;border:none;margin-bottom:1rem;">The Complete Series</h3>
+  <p style="font-family:'Source Sans 3',sans-serif;font-size:0.95rem;color:var(--text-secondary);line-height:1.8;">
+    <strong>Part I:</strong> Foundations → Core ML → Neural Networks → Transformers → LLMs<br>
+    <strong>Part II:</strong> Backprop Walkthrough → Implementation → Training Pipeline → Inference<br>
+    <strong>Part III:</strong> Efficient Attention → LoRA → Quantization → Reasoning → RAG<br>
+    <strong>Part IV:</strong> Complete PyTorch Cookbook — 10 Implementations<br>
+    <strong>Part V:</strong> Information Theory → VAEs → GANs → Diffusion → Geometry of Learning<br>
+    <strong>Part VI:</strong> Production → Ecosystem → Safety → Paper Reading → Glossary
+  </p>
+  <p style="margin-top:2rem;font-style:italic;color:var(--text-secondary);">
+    "The purpose of computing is insight, not numbers." — Richard Hamming<br><br>
+    You now have the mathematical tools, implementation patterns, and research context<br>
+    to not just use ML systems, but to understand and build them from first principles.<br>
+    The next step is yours.
+  </p>
+</div>
+
+</div>
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+  renderMathInElement(document.body, { delimiters: [{left:"$$",right:"$$",display:true},{left:"\\(",right:"\\)",display:false}], throwOnError:false });
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ML First Principles — Part VIII: The Frontier</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Crimson+Pro:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400;1,500&family=JetBrains+Mono:wght@400;500&family=Source+Sans+3:wght@300;400;500;600;700&display=swap');
+  :root{--bg:#faf8f5;--bg-alt:#f0ece6;--bg-code:#1e1e2e;--text:#1a1a1a;--text-secondary:#555;--accent:#3a6b5e;--accent-dark:#1f4a3d;--border:#d4cfc7;--math-bg:#fdfcfa;--exercise-bg:#eef4e8;--exercise-border:#6b8e4e;--paper-bg:#f5f0e8;--paper-border:#c4a97d;--insight-bg:#e8eef5;--insight-border:#4a6fa5;--deep-bg:#f5f0f8;--deep-border:#7a5ca5;--open-bg:#fff5f5;--open-border:#c44a3a;--future-bg:#f0f8f5;--future-border:#3a8a5e}
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{font-family:'Crimson Pro',Georgia,serif;font-size:19px;line-height:1.72;color:var(--text);background:var(--bg);-webkit-font-smoothing:antialiased}
+  .container{max-width:820px;margin:0 auto;padding:3rem 2rem 6rem}
+  .hero{text-align:center;padding:4rem 0 3rem;border-bottom:3px double var(--border);margin-bottom:3rem}
+  .hero h1{font-family:'Crimson Pro',serif;font-weight:700;font-size:2.4rem;line-height:1.2;color:var(--accent-dark);letter-spacing:-0.02em;margin-bottom:0.5rem}
+  .hero .subtitle{font-family:'Source Sans 3',sans-serif;font-weight:300;font-size:1.05rem;color:var(--text-secondary);letter-spacing:0.04em;text-transform:uppercase}
+  .toc{background:var(--bg-alt);border:1px solid var(--border);border-radius:4px;padding:2rem 2.5rem;margin-bottom:3rem}
+  .toc h2{font-family:'Source Sans 3',sans-serif;font-weight:700;font-size:1rem;text-transform:uppercase;letter-spacing:0.12em;color:var(--accent);margin-bottom:1rem}
+  .toc ol{list-style:none;counter-reset:tc}.toc>ol>li{counter-increment:tc;margin-bottom:0.3rem}.toc>ol>li::before{content:counter(tc) ". ";font-weight:600;color:var(--accent)}
+  .toc a{color:var(--text);text-decoration:none;font-size:1rem;font-family:'Source Sans 3',sans-serif}
+  .toc .sub{padding-left:2rem;margin-top:0.2rem}.toc .sub li{font-size:0.92rem;color:var(--text-secondary);margin-bottom:0.15rem}
+  .part-header{text-align:center;padding:3rem 0 1.5rem;margin:4rem 0 2rem;border-top:3px double var(--border)}
+  .part-header .part-label{font-family:'Source Sans 3',sans-serif;font-weight:700;text-transform:uppercase;letter-spacing:0.2em;font-size:0.8rem;color:var(--accent)}
+  .part-header h2{font-family:'Crimson Pro',serif;font-weight:700;font-size:2rem;color:var(--accent-dark);margin-top:0.3rem}
+  h3{font-family:'Crimson Pro',serif;font-weight:600;font-size:1.5rem;color:var(--accent-dark);margin:3rem 0 1rem;padding-bottom:0.3rem;border-bottom:1px solid var(--border)}
+  h4{font-family:'Source Sans 3',sans-serif;font-weight:600;font-size:1.05rem;color:var(--text);margin:2rem 0 0.7rem;text-transform:uppercase;letter-spacing:0.06em}
+  h5{font-family:'Source Sans 3',sans-serif;font-weight:600;font-size:0.95rem;color:var(--accent);margin:1.5rem 0 0.5rem}
+  p{margin-bottom:1rem}strong{font-weight:600}em{font-style:italic}
+  .math-block{background:var(--math-bg);border-left:3px solid var(--accent);padding:1.2rem 1.5rem;margin:1.5rem 0;overflow-x:auto;border-radius:0 4px 4px 0}
+  .math-block .label{font-family:'Source Sans 3',sans-serif;font-size:0.78rem;font-weight:600;text-transform:uppercase;letter-spacing:0.1em;color:var(--accent);display:block;margin-bottom:0.5rem}
+  .intuition{background:var(--insight-bg);border-left:3px solid var(--insight-border);padding:1.2rem 1.5rem;margin:1.5rem 0;border-radius:0 4px 4px 0}
+  .intuition::before{content:"💡 Insight";font-family:'Source Sans 3',sans-serif;font-size:0.78rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--insight-border);display:block;margin-bottom:0.5rem}
+  .deep{background:var(--deep-bg);border-left:3px solid var(--deep-border);padding:1.2rem 1.5rem;margin:1.5rem 0;border-radius:0 4px 4px 0}
+  .deep::before{content:"🔬 Deep Dive";font-family:'Source Sans 3',sans-serif;font-size:0.78rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--deep-border);display:block;margin-bottom:0.5rem}
+  .paper-ref{background:var(--paper-bg);border-left:3px solid var(--paper-border);padding:1.2rem 1.5rem;margin:1.5rem 0;border-radius:0 4px 4px 0}
+  .paper-ref::before{content:"📄 Key Work";font-family:'Source Sans 3',sans-serif;font-size:0.78rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--paper-border);display:block;margin-bottom:0.5rem}
+  .open{background:var(--open-bg);border-left:3px solid var(--open-border);padding:1.2rem 1.5rem;margin:1.5rem 0;border-radius:0 4px 4px 0}
+  .open::before{content:"❓ Open Problem";font-family:'Source Sans 3',sans-serif;font-size:0.78rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--open-border);display:block;margin-bottom:0.5rem}
+  .future{background:var(--future-bg);border-left:3px solid var(--future-border);padding:1.2rem 1.5rem;margin:1.5rem 0;border-radius:0 4px 4px 0}
+  .future::before{content:"🔮 Research Direction";font-family:'Source Sans 3',sans-serif;font-size:0.78rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--future-border);display:block;margin-bottom:0.5rem}
+  .exercise{background:var(--exercise-bg);border-left:3px solid var(--exercise-border);padding:1.2rem 1.5rem;margin:1.5rem 0;border-radius:0 4px 4px 0}
+  .exercise::before{content:"🧪 Research Question";font-family:'Source Sans 3',sans-serif;font-size:0.78rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--exercise-border);display:block;margin-bottom:0.5rem}
+  code{font-family:'JetBrains Mono',monospace;font-size:0.85em;background:var(--bg-alt);padding:0.15em 0.4em;border-radius:3px}
+  table{width:100%;border-collapse:collapse;margin:1.5rem 0;font-size:0.95rem}
+  th,td{padding:0.6rem 1rem;text-align:left;border-bottom:1px solid var(--border)}
+  th{font-family:'Source Sans 3',sans-serif;font-weight:600;font-size:0.82rem;text-transform:uppercase;letter-spacing:0.08em;color:var(--accent-dark);border-bottom:2px solid var(--accent)}
+  .separator{text-align:center;margin:3rem 0;color:var(--border);letter-spacing:0.5em}
+  .ascii-diagram{background:var(--bg-alt);border:1px solid var(--border);padding:1.5rem;margin:1.5rem 0;border-radius:4px;font-family:'JetBrains Mono',monospace;font-size:0.73rem;line-height:1.4;white-space:pre;overflow-x:auto}
+  .katex-display{margin:0.8rem 0!important}.katex{font-size:1.05em}
+  @media(max-width:700px){.container{padding:1.5rem 1rem 4rem}.hero h1{font-size:1.8rem}body{font-size:17px}}
+</style>
+</head>
+<body>
+<style>
+.course-nav{position:sticky;top:0;z-index:1000;background:#1a1a2e;padding:10px 20px;display:flex;justify-content:space-between;align-items:center;font-family:'Source Sans 3',sans-serif;font-size:0.9rem;box-shadow:0 2px 8px rgba(0,0,0,0.15)}
+.course-nav a{color:#ccc;text-decoration:none;transition:color 0.2s}
+.course-nav a:hover{color:#fff}
+.course-nav .nav-home{font-weight:600;color:#fff}
+.course-nav .nav-prev,.course-nav .nav-next{min-width:120px}
+.course-nav .nav-next{text-align:right}
+</style>
+<nav class="course-nav">
+<div class="nav-prev"><a href="ml-part7-end-to-end-projects.html">&larr; Part VII: Projects</a></div>
+<div><a href="index.html" class="nav-home">ML First Principles</a></div>
+<div class="nav-next"><span></span></div>
+</nav>
+<div class="container">
+
+<div class="hero">
+  <div class="subtitle">Part VIII — Where the Map Ends</div>
+  <h1>The Frontier: Open Problems<br>& the Future of AI</h1>
+  <p style="margin-top:1rem;color:var(--text-secondary);font-size:0.95rem;">
+    The unsolved questions, emerging paradigms, and research directions that will define<br>
+    the next era of machine learning. What we know, what we don't, and what we're building toward.
+  </p>
+</div>
+
+<div class="toc">
+  <h2>Contents</h2>
+  <ol>
+    <li><a href="#s1">The Data Wall & Synthetic Data</a>
+      <ul class="sub"><li>Running out of internet · Self-play · Model-generated training data · Risks</li></ul>
+    </li>
+    <li><a href="#s2">Beyond Next-Token Prediction</a>
+      <ul class="sub"><li>Limitations of autoregressive LMs · World models · Planning · Prediction vs understanding</li></ul>
+    </li>
+    <li><a href="#s3">Reasoning & Formal Verification</a>
+      <ul class="sub"><li>Can LLMs reason? · Process reward models · Formal proofs · Neuro-symbolic</li></ul>
+    </li>
+    <li><a href="#s4">Efficient Architectures</a>
+      <ul class="sub"><li>Post-transformer designs · SSMs · Hybrid models · Hardware co-design</li></ul>
+    </li>
+    <li><a href="#s5">Mechanistic Interpretability</a>
+      <ul class="sub"><li>Understanding the black box · Features · Circuits · Sparse autoencoders · Superposition</li></ul>
+    </li>
+    <li><a href="#s6">Multimodal & Embodied Intelligence</a>
+      <ul class="sub"><li>Native multimodality · Video understanding · Robotics · Embodied agents</li></ul>
+    </li>
+    <li><a href="#s7">Alignment & Safety at Scale</a>
+      <ul class="sub"><li>Scalable oversight · Reward hacking · Corrigibility · AI governance</li></ul>
+    </li>
+    <li><a href="#s8">The Big Questions</a>
+      <ul class="sub"><li>Does scale = intelligence? · Consciousness · Emergence · Limits of learning</li></ul>
+    </li>
+  </ol>
+</div>
+
+
+<!-- ═══════════════════════ 1 ═══════════════════════ -->
+<div class="part-header" id="s1">
+  <div class="part-label">Frontier I</div>
+  <h2>The Data Wall & Synthetic Data</h2>
+</div>
+
+<h3>The Problem</h3>
+<p>Chinchilla (Part I §7.2) showed that compute-optimal training needs ~20 tokens per parameter. A 10T parameter model would need ~200 trillion tokens. But high-quality text on the entire internet is estimated at 10–20 trillion tokens. We're approaching the ceiling of naturally-occurring training data.</p>
+
+<div class="open">
+  <strong>How do we train models beyond the data wall?</strong> Current approaches include: repeating data with different orderings (diminishing returns beyond ~4 epochs), curating higher-quality subsets (quality > quantity), synthetic data generation by existing models, and learning from non-text modalities (video, audio, sensor data).
+</div>
+
+<h3>Synthetic Data — Promise and Peril</h3>
+
+<div class="paper-ref">
+  <strong>Phi-3 Technical Report (Microsoft, 2024)</strong> — Demonstrated that small models (3.8B) trained primarily on synthetic data generated by larger models can match much larger models on benchmarks. The key: carefully curated synthetic data targeted at specific reasoning capabilities.
+</div>
+
+<p><strong>Self-improvement loop:</strong> Model generates data → filter for quality → train next generation on filtered data. DeepSeek-R1 used this: RL for reasoning → generate reasoning traces → train smaller models on the traces. This is a form of knowledge distillation (Part III §VIII) at training-data scale.</p>
+
+<div class="open">
+  <strong>Model collapse:</strong> Shumailov et al. (2023) showed that training on model-generated data can lead to "model collapse" — progressive degradation of the data distribution. Each generation loses tail events and overrepresents the mode. The mathematical result: after enough generations, the learned distribution converges to a point mass. How do we use synthetic data without collapsing? Current solutions: always mix in real data, use diverse generation strategies, filter aggressively for quality and diversity.
+</div>
+
+<div class="separator">· · ·</div>
+
+
+<!-- ═══════════════════════ 2 ═══════════════════════ -->
+<div class="part-header" id="s2">
+  <div class="part-label">Frontier II</div>
+  <h2>Beyond Next-Token Prediction</h2>
+</div>
+
+<h3>The Autoregressive Limitation</h3>
+
+<div class="intuition">
+  An autoregressive LLM generates one token at a time, left to right. This has a profound limitation: <em>every token gets the same amount of compute</em>. The word "the" gets the same forward pass as a critical logical step. Humans don't think this way — we allocate more thought to harder parts.
+</div>
+
+<p>Current "reasoning models" (o1, R1) patch this by generating more tokens — but the thinking is still in token-space, one at a time. Is there a better approach?</p>
+
+<h3>Contending Paradigms</h3>
+
+<h4>World Models</h4>
+
+<div class="paper-ref">
+  <strong>Yann LeCun's vision (2022–ongoing)</strong> — "A Path Towards Autonomous Machine Intelligence." Proposes that next-token prediction is fundamentally insufficient for understanding the world. Instead, models should learn a "world model" — an internal representation of how the world works — and use it for planning and prediction in latent space, not token space.
+</div>
+
+<div class="ascii-diagram">
+ AUTOREGRESSIVE LLM:
+ "The ball is thrown" → predict next token → "upward" → next → "and" → ...
+ (plans in token space, one word at a time)
+
+ WORLD MODEL (proposed):
+ [observe scene] → [build internal model of physics]
+     → [simulate: ball trajectory in latent space] → [plan actions]
+ (plans in latent space, then translates to tokens only at the end)
+</div>
+
+<h4>Joint Embedding Predictive Architecture (JEPA)</h4>
+<p>Instead of predicting exact pixels or tokens (which requires modeling irrelevant details like texture), predict <em>abstract representations</em>. Train by predicting the embedding of the next segment, not the raw content. This focuses the model on learning the structure that matters.</p>
+
+<div class="math-block">
+  <span class="label">JEPA Objective (simplified)</span>
+  $$\mathcal{L} = \|\text{Predictor}(s_x, \Delta) - \text{sg}(\text{Encoder}(y))\|^2$$
+</div>
+<p>Where \(s_x\) is the encoding of context, \(\Delta\) specifies what to predict, \(y\) is the target, and \(\text{sg}\) is stop-gradient (prevent collapse). The model learns to predict in representation space, not data space.</p>
+
+<div class="open">
+  <strong>Can we combine the best of both worlds?</strong> Autoregressive LLMs have proven remarkably capable, but they waste compute on trivial predictions and struggle with planning. World models are theoretically elegant but haven't been made to work at scale for language. The frontier: hybrid architectures that use autoregressive generation for language output but internal latent-space reasoning for planning.
+</div>
+
+<div class="separator">· · ·</div>
+
+
+<!-- ═══════════════════════ 3 ═══════════════════════ -->
+<div class="part-header" id="s3">
+  <div class="part-label">Frontier III</div>
+  <h2>Reasoning & Formal Verification</h2>
+</div>
+
+<h3>Do LLMs Actually Reason?</h3>
+
+<p>This is one of the most debated questions in AI. Current LLMs exhibit behaviors that <em>look like</em> reasoning: they solve math problems, write proofs, debug code, and plan multi-step solutions. But there's a fundamental ambiguity: are they performing genuine logical reasoning, or sophisticated pattern matching on reasoning-like text?</p>
+
+<div class="deep">
+  <strong>Evidence for reasoning:</strong> Models solve novel problems not in their training data (verified by withholding problems). They transfer between formats (solve a word problem, then solve the same problem in code). Performance scales with chain-of-thought length in predictable ways. They discover valid mathematical proofs.<br><br>
+  <strong>Evidence against reasoning:</strong> Models fail on trivially modified versions of familiar problems (change the numbers in a well-known puzzle and they fail). They're sensitive to irrelevant surface features. They can't reliably verify their own outputs. Performance degrades on out-of-distribution logical structures.
+</div>
+
+<h3>Process Reward Models</h3>
+
+<div class="paper-ref">
+  <strong>Lightman et al. (2023)</strong> — "Let's Verify Step by Step." Train a reward model that evaluates each step of reasoning, not just the final answer. Process reward models (PRMs) dramatically improve mathematical reasoning over outcome reward models (ORMs). The key insight: rewarding correct reasoning process leads to more reliable answers than rewarding correct answers, because a model can reach a correct answer through flawed reasoning.
+</div>
+
+<div class="math-block">
+  <span class="label">Process Reward vs Outcome Reward</span>
+  $$R_{\text{ORM}}(\text{solution}) = \mathbb{1}[\text{final answer is correct}]$$
+  $$R_{\text{PRM}}(\text{solution}) = \prod_{t=1}^{T} P(\text{step } t \text{ is correct} \mid \text{steps}_{1:t})$$
+</div>
+
+<h3>Formal Mathematics & Automated Theorem Proving</h3>
+
+<div class="future">
+  <strong>LLMs + formal proof assistants (Lean, Coq, Isabelle):</strong> Train LLMs to generate formal proofs that can be mechanically verified. This sidesteps the reasoning ambiguity entirely — if the proof checks, the reasoning is correct by construction. AlphaProof (DeepMind, 2024) solved IMO problems by generating Lean proofs via search. This is a path to provably correct AI reasoning.
+</div>
+
+<h3>Neuro-Symbolic Integration</h3>
+<p>Combine the flexible pattern recognition of neural networks with the precise logical reasoning of symbolic systems. The LLM generates logical formulas or programs; a symbolic engine executes them exactly. This separates "understanding the problem" (neural) from "computing the answer" (symbolic).</p>
+
+<div class="open">
+  <strong>The fundamental question:</strong> Is there a clean boundary between "understanding" and "reasoning," or are they the same thing at different levels of abstraction? If neural networks can be made large and well-trained enough, do they subsume symbolic reasoning? Or is there an irreducible gap between pattern matching and logical deduction?
+</div>
+
+<div class="separator">· · ·</div>
+
+
+<!-- ═══════════════════════ 4 ═══════════════════════ -->
+<div class="part-header" id="s4">
+  <div class="part-label">Frontier IV</div>
+  <h2>Efficient Architectures</h2>
+</div>
+
+<h3>Is the Transformer Optimal?</h3>
+<p>The transformer has been dominant since 2017, but its quadratic attention cost limits scalability. Several alternative architectures are competing:</p>
+
+<table>
+  <tr><th>Architecture</th><th>Complexity</th><th>Strengths</th><th>Weaknesses</th></tr>
+  <tr><td>Transformer</td><td>\(O(n^2 d)\)</td><td>Proven at all scales; rich research ecosystem</td><td>Quadratic cost; large KV cache</td></tr>
+  <tr><td>Mamba (SSM)</td><td>\(O(n d)\)</td><td>Linear scaling; fast inference; no KV cache</td><td>Weaker on recall-heavy tasks</td></tr>
+  <tr><td>RWKV</td><td>\(O(n d)\)</td><td>Linear; trained like transformer, infers like RNN</td><td>Limited in-context learning</td></tr>
+  <tr><td>Hyena</td><td>\(O(n \log n)\)</td><td>Long convolutions; no attention matrix</td><td>Less proven at scale</td></tr>
+  <tr><td>Hybrid (Mamba + Attention)</td><td>Mixed</td><td>Best of both: linear for most, attention where needed</td><td>Complex engineering</td></tr>
+</table>
+
+<div class="future">
+  <strong>Hybrid architectures are the likely near-term winner.</strong> Models like Jamba (AI21, 2024) interleave Mamba layers for efficiency with attention layers for recall-heavy tasks. The ratio of SSM-to-attention layers and which positions get attention are key design choices. Research question: what is the minimum number of attention layers needed to preserve full in-context learning ability?
+</div>
+
+<h3>Hardware-Architecture Co-Design</h3>
+<p>The transformer was designed for GPU parallelism. New architectures should be designed <em>with</em> hardware constraints: memory bandwidth, communication latency, chip topology. This "hardware lottery" (Hooker, 2020) determines which architectures succeed — not just theoretical efficiency, but practical throughput on real hardware.</p>
+
+<div class="separator">· · ·</div>
+
+
+<!-- ═══════════════════════ 5 ═══════════════════════ -->
+<div class="part-header" id="s5">
+  <div class="part-label">Frontier V</div>
+  <h2>Mechanistic Interpretability</h2>
+</div>
+
+<p>Part II §X introduced interpretability. Here we go deeper into the frontier of understanding <em>how</em> neural networks compute.</p>
+
+<h3>The Superposition Hypothesis</h3>
+
+<div class="paper-ref">
+  <strong>Elhage et al. (2022)</strong> — "Toy Models of Superposition." Proved that neural networks can represent more features than they have dimensions by encoding features as nearly-orthogonal directions. Sparse features (rarely active together) can share dimensions without interference.
+</div>
+
+<div class="math-block">
+  <span class="label">Superposition capacity</span>
+  $$\text{In } \mathbb{R}^d, \text{ you can fit } \sim \exp(c \cdot d) \text{ nearly-orthogonal vectors}$$
+</div>
+
+<p>This means a 4096-dimensional residual stream can potentially represent millions of features. The cosine similarity between any two random vectors in high dimensions is approximately \(1/\sqrt{d}\) — nearly zero. Features that rarely co-occur can safely share dimensions.</p>
+
+<h3>Sparse Autoencoders — Extracting Features</h3>
+
+<div class="paper-ref">
+  <strong>Anthropic's "Scaling Monosemanticity" (2024)</strong> — Trained sparse autoencoders on Claude's activations, finding millions of interpretable features: concepts, entities, syntactic roles, reasoning patterns. Many features correspond to human-understandable concepts (e.g., "Golden Gate Bridge", "sycophantic praise", "code bugs").
+</div>
+
+<div class="math-block">
+  <span class="label">Sparse Autoencoder</span>
+  $$\mathbf{f} = \text{ReLU}(\mathbf{W}_{\text{enc}}(\mathbf{x} - \mathbf{b}_{\text{dec}}) + \mathbf{b}_{\text{enc}})$$
+  $$\hat{\mathbf{x}} = \mathbf{W}_{\text{dec}} \mathbf{f} + \mathbf{b}_{\text{dec}}$$
+  $$\mathcal{L} = \|\mathbf{x} - \hat{\mathbf{x}}\|^2 + \lambda \|\mathbf{f}\|_1$$
+</div>
+
+<p>The encoder maps a \(d\)-dimensional activation to a much higher-dimensional (\(kd\), where \(k \gg 1\)) sparse feature space. The L1 penalty encourages most features to be zero — only the relevant ones fire. Each column of \(\mathbf{W}_{\text{dec}}\) is a "feature direction" in activation space.</p>
+
+<div class="open">
+  <strong>Can we fully understand a neural network?</strong> Current interpretability work has found individual features and small circuits, but we're far from a complete understanding of how a model produces any given output. The challenge: a 70B parameter model has trillions of possible circuits. We need automated tools that scale, not just manual inspection. This is arguably the most important research direction for AI safety.
+</div>
+
+<div class="separator">· · ·</div>
+
+
+<!-- ═══════════════════════ 6 ═══════════════════════ -->
+<div class="part-header" id="s6">
+  <div class="part-label">Frontier VI</div>
+  <h2>Multimodal & Embodied Intelligence</h2>
+</div>
+
+<h3>Native Multimodality</h3>
+<p>Current vision-language models bolt a vision encoder onto a text LLM (Part III §VI). The frontier is <em>natively</em> multimodal models that process all modalities from the start — text, images, audio, video, and sensor data — in a single unified architecture.</p>
+
+<div class="future">
+  <strong>Token-based unification:</strong> Convert everything to tokens. Images become patch tokens (ViT), audio becomes spectrogram tokens, video becomes spatiotemporal tokens. A single transformer processes all modalities through the same attention mechanism. This is how models like Gemini and GPT-4o approach multimodality — though the details of their architectures remain proprietary.
+</div>
+
+<h3>Video Understanding</h3>
+<p>Video is vastly richer than images: temporal dynamics, causality, physics, human behavior. A 1-minute video at 24fps with 256×256 resolution contains ~100M pixels — far more than the context window of any current model. Key challenges: efficient temporal representation, long-range temporal reasoning, and learning physics from observation.</p>
+
+<h3>Embodied AI & Robotics</h3>
+
+<div class="future">
+  <strong>Foundation models for robotics:</strong> Train large models on diverse robot data (multiple robot types, environments, tasks), then fine-tune or prompt for specific tasks. This is the "ImageNet moment" for robotics that hasn't happened yet. Challenges: real-world data is expensive and dangerous to collect, sim-to-real transfer remains imperfect, and physical safety requirements are much stricter than text safety.
+</div>
+
+<div class="separator">· · ·</div>
+
+
+<!-- ═══════════════════════ 7 ═══════════════════════ -->
+<div class="part-header" id="s7">
+  <div class="part-label">Frontier VII</div>
+  <h2>Alignment & Safety at Scale</h2>
+</div>
+
+<h3>The Scalable Oversight Problem</h3>
+
+<div class="open">
+  Current alignment depends on humans evaluating model outputs. But what happens when models are smarter than the evaluators? A model that can write better code than any human programmer can also generate outputs that no human can fully verify. How do we ensure alignment when we can't check the work?
+</div>
+
+<h4>Proposed Solutions</h4>
+
+<p><strong>Recursive reward modeling:</strong> Use AI to help humans evaluate AI. A more capable model assists the human evaluator, who then provides the training signal. The hope: the evaluation task is easier than the generation task, so the evaluator can be less capable than the model being evaluated.</p>
+
+<p><strong>Debate:</strong> Two AI models argue opposing sides; a human judge evaluates. In theory, the truthful model should be able to point out the deceptive model's flaws, even if the judge can't independently verify the claims.</p>
+
+<p><strong>Interpretability-based alignment:</strong> Instead of evaluating outputs, directly inspect the model's internal representations to verify it's "thinking" aligned thoughts. This requires mechanistic interpretability (Frontier V) to actually work.</p>
+
+<h3>Reward Hacking & Goodhart's Law</h3>
+
+<div class="intuition">
+  "When a measure becomes a target, it ceases to be a good measure." — Goodhart's Law. Any reward model is an imperfect proxy for what we actually want. A sufficiently capable optimizer will find inputs that score high on the proxy but violate the spirit. Examples: a model trained to be "helpful" that agrees with everything (sycophancy), or a model trained to "avoid harmful outputs" that refuses everything (over-refusal).
+</div>
+
+<div class="math-block">
+  <span class="label">The Overoptimization Problem</span>
+  $$\text{As } D_{\text{KL}}[\pi_\theta \| \pi_{\text{ref}}] \to \infty, \quad R_{\text{gold}}(\pi_\theta) \to \text{decreases}$$
+</div>
+<p>Gao et al. (2023) showed empirically that as you optimize more aggressively against a reward model (increasing KL from the base policy), performance initially improves on the true reward, then degrades. The reward model is exploited beyond its region of validity.</p>
+
+<h3>The Governance Challenge</h3>
+<p>Technical alignment is necessary but not sufficient. Who decides what "aligned" means? Different cultures, legal systems, and individuals have different values. The governance question — how AI development should be regulated, who has access to powerful models, and how to prevent misuse while enabling innovation — is as important as the technical questions, and far less well-defined.</p>
+
+<div class="separator">· · ·</div>
+
+
+<!-- ═══════════════════════ 8 ═══════════════════════ -->
+<div class="part-header" id="s8">
+  <div class="part-label">Frontier VIII</div>
+  <h2>The Big Questions</h2>
+</div>
+
+<h3>Does Scale = Intelligence?</h3>
+
+<p>The "scaling hypothesis" — that sufficient scale (parameters, data, compute) will lead to human-level intelligence — is the central bet of the current AI paradigm. Evidence so far: every order of magnitude of scale has produced new capabilities that weren't predicted (in-context learning, chain-of-thought reasoning, code generation). But does this trend continue indefinitely?</p>
+
+<p><strong>The optimistic case:</strong> Intelligence is a computational phenomenon, and the transformer + next-token prediction is a sufficiently general learning algorithm. Scale plus data will eventually produce any cognitive capability humans have.</p>
+
+<p><strong>The skeptical case:</strong> Current LLMs learn correlations, not causation. They lack grounding, embodiment, and the ability to truly learn from experience. Scale gets you further on the correlation curve but never crosses to genuine understanding. New architectural ideas are needed.</p>
+
+<h3>Emergence — What Creates New Capabilities?</h3>
+
+<div class="open">
+  <strong>Why do capabilities appear suddenly at certain scales?</strong> A model with 6B parameters can't do chain-of-thought math; a model with 60B parameters can. Where does this ability come from? Is it genuinely emergent (a qualitative phase transition), or is it a smooth improvement that crosses a visibility threshold? Recent work suggests many "emergent" abilities may be measurement artifacts — they look discontinuous because of the evaluation metric, not the underlying capability. This remains actively debated.
+</div>
+
+<h3>The Nature of Understanding</h3>
+
+<p>When a language model generates a correct explanation of quantum mechanics, does it "understand" quantum mechanics? The Chinese Room argument (Searle, 1980) says no — syntax manipulation doesn't constitute semantics. But this may be based on an intuition about understanding that doesn't scale. If a system can answer any question about quantum mechanics, use quantum reasoning to solve novel problems, detect errors in quantum reasoning, and generate new insights — at what point is the distinction between "real understanding" and "mere simulation" meaningful?</p>
+
+<div class="intuition">
+  <strong>A pragmatic perspective:</strong> Understanding is not a binary property. It's a spectrum of capability — how broadly, flexibly, and reliably a system can use knowledge. By this measure, LLMs have genuine but limited understanding: broad but shallow, flexible but fragile, capable but unreliable. The frontier is pushing every dimension simultaneously.
+</div>
+
+<h3>Information-Theoretic Limits</h3>
+
+<div class="math-block">
+  <span class="label">The Data Processing Inequality</span>
+  $$X \to Y \to Z \implies I(X; Z) \leq I(X; Y)$$
+</div>
+
+<p>No processing of the data can create information that wasn't there to begin with. A model trained on text can learn only what's in text — it cannot learn the physical sensation of heat or the experience of seeing red. This is a hard mathematical limit. The question: how much of human-relevant knowledge is capturable in text? Probably much more than we initially thought (given GPT-4's capabilities), but probably not everything.</p>
+
+<h3>What Would It Take to Be Confident?</h3>
+
+<p>The honest answer: we don't have a theory of intelligence robust enough to predict when (or if) AI systems will match human cognition in all dimensions. We don't even have agreement on what "intelligence" means. What we do have are engineering systems that are incredibly useful and becoming more so every year, and a set of mathematical tools (the contents of this entire series) that explain how they work at the mechanistic level.</p>
+
+<div class="exercise">
+  <strong>Questions to carry forward:</strong><br>
+  (a) If you were designing a benchmark to test whether a model <em>truly understands</em> a concept (vs. pattern matching), what would it look like?<br>
+  (b) What's the minimum amount of architectural inductive bias a learning system needs? Could a model with zero prior structure (no attention, no convolutions, no recurrence) learn language if given enough data and compute?<br>
+  (c) The information bottleneck (Part V §6) says neural networks compress representations to keep only task-relevant information. Does this mean models <em>must</em> learn something like understanding, or can they achieve high performance without it?<br>
+  (d) Design a research agenda to determine whether LLMs have "world models" — internal representations that capture causal structure of the world, not just statistical correlations.
+</div>
+
+<div class="separator">· · ·</div>
+
+
+<!-- ═══════════════════════ CODA ═══════════════════════ -->
+<div style="text-align:center;padding:3rem 0;border-top:3px double var(--border);margin-top:3rem;">
+  <h3 style="font-family:'Crimson Pro',serif;font-weight:700;color:var(--accent-dark);font-size:1.6rem;border:none;margin-bottom:1.5rem;">The Complete Series</h3>
+  <p style="font-family:'Source Sans 3',sans-serif;font-size:0.95rem;color:var(--text-secondary);line-height:2;">
+    <strong>I.</strong> &ensp; Math Foundations → Core ML → Neural Networks → Transformers → Modern LLMs<br>
+    <strong>II.</strong> &ensp; Backprop Walkthrough → Transformer Trace → Implementation → Training → Inference<br>
+    <strong>III.</strong> &ensp; Efficient Attention → LoRA → Quantization → Reasoning → RAG → Multimodal<br>
+    <strong>IV.</strong> &ensp; Complete PyTorch Cookbook — 10 From-Scratch Implementations<br>
+    <strong>V.</strong> &ensp; Information Theory → VAEs → GANs → Diffusion Models → Geometry of Learning<br>
+    <strong>VI.</strong> &ensp; Production Serving → Open-Source Ecosystem → Safety → Paper Reading → Glossary<br>
+    <strong>VII.</strong> &ensp; 5 End-to-End Projects — Tokenizer · GPT · RAG · LoRA · Agent<br>
+    <strong>VIII.</strong> &ensp; The Frontier — Open Problems & the Future of AI
+  </p>
+
+  <div style="margin-top:3rem;padding:2rem;background:var(--bg-alt);border-radius:8px;max-width:600px;margin-left:auto;margin-right:auto;">
+    <p style="font-family:'Crimson Pro',serif;font-size:1.15rem;font-style:italic;color:var(--text);line-height:1.7;margin-bottom:1rem;">
+      "We are like butterflies who flutter for a day and think it is forever."
+    </p>
+    <p style="font-family:'Source Sans 3',sans-serif;font-size:0.85rem;color:var(--text-secondary);margin-bottom:1.5rem;">— Carl Sagan</p>
+    <p style="font-family:'Source Sans 3',sans-serif;font-size:0.92rem;color:var(--text-secondary);line-height:1.7;">
+      The field of AI is moving faster than any field in history.<br>
+      Everything in this series — 8 volumes, ~500 pages of mathematics,<br>
+      code, and analysis — captures a snapshot of early 2026.<br>
+      Parts of it will be outdated within a year. The math won't be.<br><br>
+      Dot products, gradients, probability, and information theory<br>
+      are permanent. They are the bedrock on which every future<br>
+      architecture, training method, and alignment technique will be built.<br><br>
+      You now have that bedrock. Build on it.
+    </p>
+  </div>
+</div>
+
+</div>
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+  renderMathInElement(document.body, { delimiters: [{left:"$$",right:"$$",display:true},{left:"\\(",right:"\\)",display:false}], throwOnError:false });
+});
+</script>
+</body>
+</html>

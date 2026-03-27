@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ML First Principles — Part V: Information Theory, Generative Models & Advanced Math</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Crimson+Pro:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400;1,500&family=JetBrains+Mono:wght@400;500&family=Source+Sans+3:wght@300;400;500;600;700&display=swap');
+  :root{--bg:#faf8f5;--bg-alt:#f0ece6;--bg-code:#1e1e2e;--text:#1a1a1a;--text-secondary:#555;--accent:#2a6496;--accent-dark:#1a4060;--border:#d4cfc7;--math-bg:#fdfcfa;--exercise-bg:#eef4e8;--exercise-border:#6b8e4e;--paper-bg:#f5f0e8;--paper-border:#c4a97d;--insight-bg:#e8eef5;--insight-border:#4a6fa5;--deep-bg:#f5f0f8;--deep-border:#7a5ca5;--warning-bg:#fdf0e0;--warning-border:#d4940a}
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{font-family:'Crimson Pro',Georgia,serif;font-size:19px;line-height:1.72;color:var(--text);background:var(--bg);-webkit-font-smoothing:antialiased}
+  .container{max-width:820px;margin:0 auto;padding:3rem 2rem 6rem}
+  .hero{text-align:center;padding:4rem 0 3rem;border-bottom:3px double var(--border);margin-bottom:3rem}
+  .hero h1{font-family:'Crimson Pro',serif;font-weight:700;font-size:2.4rem;line-height:1.2;color:var(--accent-dark);letter-spacing:-0.02em;margin-bottom:0.5rem}
+  .hero .subtitle{font-family:'Source Sans 3',sans-serif;font-weight:300;font-size:1.05rem;color:var(--text-secondary);letter-spacing:0.04em;text-transform:uppercase}
+  .toc{background:var(--bg-alt);border:1px solid var(--border);border-radius:4px;padding:2rem 2.5rem;margin-bottom:3rem}
+  .toc h2{font-family:'Source Sans 3',sans-serif;font-weight:700;font-size:1rem;text-transform:uppercase;letter-spacing:0.12em;color:var(--accent);margin-bottom:1rem}
+  .toc ol{list-style:none;counter-reset:tc}.toc>ol>li{counter-increment:tc;margin-bottom:0.3rem}.toc>ol>li::before{content:counter(tc) ". ";font-weight:600;color:var(--accent)}
+  .toc a{color:var(--text);text-decoration:none;font-size:1rem;font-family:'Source Sans 3',sans-serif}
+  .toc .sub{padding-left:2rem;margin-top:0.2rem}.toc .sub li{font-size:0.92rem;color:var(--text-secondary);margin-bottom:0.15rem}
+  .part-header{text-align:center;padding:3rem 0 1.5rem;margin:4rem 0 2rem;border-top:3px double var(--border)}
+  .part-header .part-label{font-family:'Source Sans 3',sans-serif;font-weight:700;text-transform:uppercase;letter-spacing:0.2em;font-size:0.8rem;color:var(--accent)}
+  .part-header h2{font-family:'Crimson Pro',serif;font-weight:700;font-size:2rem;color:var(--accent-dark);margin-top:0.3rem}
+  h3{font-family:'Crimson Pro',serif;font-weight:600;font-size:1.5rem;color:var(--accent-dark);margin:3rem 0 1rem;padding-bottom:0.3rem;border-bottom:1px solid var(--border)}
+  h4{font-family:'Source Sans 3',sans-serif;font-weight:600;font-size:1.05rem;color:var(--text);margin:2rem 0 0.7rem;text-transform:uppercase;letter-spacing:0.06em}
+  h5{font-family:'Source Sans 3',sans-serif;font-weight:600;font-size:0.95rem;color:var(--accent);margin:1.5rem 0 0.5rem}
+  p{margin-bottom:1rem}strong{font-weight:600}em{font-style:italic}
+  .math-block{background:var(--math-bg);border-left:3px solid var(--accent);padding:1.2rem 1.5rem;margin:1.5rem 0;overflow-x:auto;border-radius:0 4px 4px 0}
+  .math-block .label{font-family:'Source Sans 3',sans-serif;font-size:0.78rem;font-weight:600;text-transform:uppercase;letter-spacing:0.1em;color:var(--accent);display:block;margin-bottom:0.5rem}
+  .intuition{background:var(--insight-bg);border-left:3px solid var(--insight-border);padding:1.2rem 1.5rem;margin:1.5rem 0;border-radius:0 4px 4px 0}
+  .intuition::before{content:"💡 Intuition";font-family:'Source Sans 3',sans-serif;font-size:0.78rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--insight-border);display:block;margin-bottom:0.5rem}
+  .deep{background:var(--deep-bg);border-left:3px solid var(--deep-border);padding:1.2rem 1.5rem;margin:1.5rem 0;border-radius:0 4px 4px 0}
+  .deep::before{content:"🔬 Deep Dive";font-family:'Source Sans 3',sans-serif;font-size:0.78rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--deep-border);display:block;margin-bottom:0.5rem}
+  .paper-ref{background:var(--paper-bg);border-left:3px solid var(--paper-border);padding:1.2rem 1.5rem;margin:1.5rem 0;border-radius:0 4px 4px 0}
+  .paper-ref::before{content:"📄 Key Paper";font-family:'Source Sans 3',sans-serif;font-size:0.78rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--paper-border);display:block;margin-bottom:0.5rem}
+  .exercise{background:var(--exercise-bg);border-left:3px solid var(--exercise-border);padding:1.2rem 1.5rem;margin:1.5rem 0;border-radius:0 4px 4px 0}
+  .exercise::before{content:"✏️ Exercise";font-family:'Source Sans 3',sans-serif;font-size:0.78rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--exercise-border);display:block;margin-bottom:0.5rem}
+  .example{background:#fff;border:1px solid var(--border);padding:1.2rem 1.5rem;margin:1.5rem 0;border-radius:4px}
+  .example::before{content:"🔢 Worked Example";font-family:'Source Sans 3',sans-serif;font-size:0.78rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--text-secondary);display:block;margin-bottom:0.5rem}
+  code{font-family:'JetBrains Mono',monospace;font-size:0.85em;background:var(--bg-alt);padding:0.15em 0.4em;border-radius:3px}
+  pre{background:var(--bg-code);color:#cdd6f4;padding:1.2rem 1.5rem;border-radius:4px;overflow-x:auto;margin:1.5rem 0;font-family:'JetBrains Mono',monospace;font-size:0.8rem;line-height:1.55}
+  table{width:100%;border-collapse:collapse;margin:1.5rem 0;font-size:0.95rem}
+  th,td{padding:0.6rem 1rem;text-align:left;border-bottom:1px solid var(--border)}
+  th{font-family:'Source Sans 3',sans-serif;font-weight:600;font-size:0.82rem;text-transform:uppercase;letter-spacing:0.08em;color:var(--accent-dark);border-bottom:2px solid var(--accent)}
+  .separator{text-align:center;margin:3rem 0;color:var(--border);letter-spacing:0.5em}
+  .ascii-diagram{background:var(--bg-alt);border:1px solid var(--border);padding:1.5rem;margin:1.5rem 0;border-radius:4px;font-family:'JetBrains Mono',monospace;font-size:0.75rem;line-height:1.4;white-space:pre;overflow-x:auto}
+  .katex-display{margin:0.8rem 0!important}.katex{font-size:1.05em}
+  @media(max-width:700px){.container{padding:1.5rem 1rem 4rem}.hero h1{font-size:1.8rem}body{font-size:17px}}
+</style>
+</head>
+<body>
+<style>
+.course-nav{position:sticky;top:0;z-index:1000;background:#1a1a2e;padding:10px 20px;display:flex;justify-content:space-between;align-items:center;font-family:'Source Sans 3',sans-serif;font-size:0.9rem;box-shadow:0 2px 8px rgba(0,0,0,0.15)}
+.course-nav a{color:#ccc;text-decoration:none;transition:color 0.2s}
+.course-nav a:hover{color:#fff}
+.course-nav .nav-home{font-weight:600;color:#fff}
+.course-nav .nav-prev,.course-nav .nav-next{min-width:120px}
+.course-nav .nav-next{text-align:right}
+</style>
+<nav class="course-nav">
+<div class="nav-prev"><a href="ml-part4-pytorch.html">&larr; Part IV: PyTorch</a></div>
+<div><a href="index.html" class="nav-home">ML First Principles</a></div>
+<div class="nav-next"><a href="ml-part6-production-glossary.html">Part VI: Production &rarr;</a></div>
+</nav>
+<div class="container">
+
+<div class="hero">
+  <div class="subtitle">Part V — The Theoretical Backbone</div>
+  <h1>Information Theory, Generative Models<br>& Advanced Mathematics</h1>
+  <p style="margin-top:1rem;color:var(--text-secondary);font-size:0.95rem;">
+    The mathematical structures that underpin why models work: entropy, KL divergence, VAEs,<br>
+    diffusion models, the information bottleneck, and the geometry of neural networks.
+  </p>
+</div>
+
+<div class="toc">
+  <h2>Contents</h2>
+  <ol>
+    <li><a href="#s1">Information Theory for ML</a>
+      <ul class="sub"><li>Entropy · Cross-entropy · KL Divergence · Mutual Information</li></ul>
+    </li>
+    <li><a href="#s2">Variational Autoencoders (VAEs)</a>
+      <ul class="sub"><li>Latent variables · ELBO derivation · Reparameterization trick</li></ul>
+    </li>
+    <li><a href="#s3">Generative Adversarial Networks (GANs)</a>
+      <ul class="sub"><li>Minimax game · Nash equilibrium · Training dynamics</li></ul>
+    </li>
+    <li><a href="#s4">Diffusion Models</a>
+      <ul class="sub"><li>Forward process · Reverse process · Score matching · DDPM</li></ul>
+    </li>
+    <li><a href="#s5">The Geometry of Neural Networks</a>
+      <ul class="sub"><li>Loss landscapes · Saddle points · Lottery ticket hypothesis · Double descent</li></ul>
+    </li>
+    <li><a href="#s6">Information Bottleneck & Generalization Theory</a>
+      <ul class="sub"><li>Bias-variance · PAC learning · Compression · Why deep learning generalizes</li></ul>
+    </li>
+    <li><a href="#s7">Advanced Probability for ML</a>
+      <ul class="sub"><li>Exponential families · Conjugate priors · Variational inference · MCMC</li></ul>
+    </li>
+  </ol>
+</div>
+
+
+<!-- ═══════════════════════ 1 ═══════════════════════ -->
+<div class="part-header" id="s1">
+  <div class="part-label">Chapter 1</div>
+  <h2>Information Theory for ML</h2>
+</div>
+
+<div class="intuition">
+  Information theory answers one question: <em>how much surprise does an event contain?</em> A certain event (sun rises) carries zero information. A rare event (meteor strike) carries lots. Every loss function in ML can be understood through this lens.
+</div>
+
+<h3>Entropy — Measuring Uncertainty</h3>
+
+<div class="math-block">
+  <span class="label">Shannon Entropy</span>
+  $$H(X) = -\sum_{x} p(x) \log_2 p(x) = \mathbb{E}[-\log_2 p(X)]$$
+</div>
+<p>Entropy is the average number of bits needed to encode a draw from distribution \(p\). Maximum entropy = maximum uncertainty (uniform distribution). Zero entropy = complete certainty (degenerate distribution).</p>
+
+<div class="example">
+  <strong>Fair coin:</strong> \(H = -(0.5 \log_2 0.5 + 0.5 \log_2 0.5) = -(-0.5 - 0.5) = 1\) bit.<br>
+  <strong>Biased coin (p=0.99):</strong> \(H = -(0.99 \log_2 0.99 + 0.01 \log_2 0.01) \approx 0.081\) bits.<br>
+  <strong>Certain outcome (p=1):</strong> \(H = -(1 \cdot \log_2 1) = 0\) bits.<br><br>
+  The fair coin needs 1 bit to encode (just say H or T). The biased coin almost never flips tails, so on average you need almost no information to describe the outcome.
+</div>
+
+<h3>Cross-Entropy — The Loss Function</h3>
+
+<div class="math-block">
+  <span class="label">Cross-Entropy</span>
+  $$H(p, q) = -\sum_x p(x) \log q(x) = H(p) + D_{\text{KL}}(p \| q)$$
+</div>
+<p><strong>What it measures:</strong> The average number of bits needed to encode data from distribution \(p\) using a code optimized for distribution \(q\). If \(q = p\) (perfect model), cross-entropy equals entropy — the theoretical minimum. Any gap is wasted bits.</p>
+
+<div class="intuition">
+  <strong>This is why cross-entropy is our loss function.</strong> When we train a model \(q_\theta\) to match the true data distribution \(p_{\text{data}}\), minimizing cross-entropy \(H(p_{\text{data}}, q_\theta)\) is equivalent to minimizing KL divergence \(D_{\text{KL}}(p \| q_\theta)\) since \(H(p)\) is a constant. And minimizing KL divergence = maximizing likelihood (MLE). It all connects.
+</div>
+
+<h3>KL Divergence — Distance Between Distributions</h3>
+
+<div class="math-block">
+  <span class="label">Kullback-Leibler Divergence</span>
+  $$D_{\text{KL}}(p \| q) = \sum_x p(x) \log \frac{p(x)}{q(x)} = \mathbb{E}_p\left[\log\frac{p(X)}{q(X)}\right]$$
+</div>
+
+<p><strong>Properties:</strong></p>
+<p>1. \(D_{\text{KL}} \geq 0\) always (Gibbs' inequality). Zero iff \(p = q\).</p>
+<p>2. <strong>Not symmetric:</strong> \(D_{\text{KL}}(p \| q) \neq D_{\text{KL}}(q \| p)\) in general.</p>
+<p>3. \(D_{\text{KL}}(p \| q) = H(p, q) - H(p)\): the "extra bits" above entropy.</p>
+
+<h5>Forward vs Reverse KL</h5>
+<p><strong>\(D_{\text{KL}}(p \| q)\) (forward KL)</strong> — Penalizes \(q\) for assigning low probability where \(p\) is high. Makes \(q\) "cover" all modes of \(p\) → mean-seeking. Used in training (MLE).</p>
+<p><strong>\(D_{\text{KL}}(q \| p)\) (reverse KL)</strong> — Penalizes \(q\) for assigning high probability where \(p\) is low. Makes \(q\) concentrate on the highest mode → mode-seeking. Used in variational inference.</p>
+
+<h3>Mutual Information</h3>
+
+<div class="math-block">
+  <span class="label">Mutual Information</span>
+  $$I(X; Y) = H(X) - H(X \mid Y) = D_{\text{KL}}(p(x,y) \| p(x)p(y))$$
+</div>
+<p>How much knowing \(Y\) reduces uncertainty about \(X\). Zero if independent, maximum if one completely determines the other. Plays a key role in feature selection, the information bottleneck, and understanding what neural networks learn.</p>
+
+<div class="exercise">
+  <strong>(a)</strong> A language model assigns probabilities [0.7, 0.2, 0.05, 0.05] to next tokens ["the", "a", "an", "one"]. The true distribution is [0.6, 0.3, 0.08, 0.02]. Compute the cross-entropy and KL divergence.<br>
+  <strong>(b)</strong> Why does minimizing cross-entropy \(H(p, q_\theta)\) give the same optimal \(\theta\) as minimizing \(D_{\text{KL}}(p \| q_\theta)\)? Show this algebraically.<br>
+  <strong>(c)</strong> A perfectly uniform language model over a 50K vocabulary has what perplexity? What does this tell you about the baseline difficulty of language modeling?
+</div>
+
+<div class="separator">· · ·</div>
+
+
+<!-- ═══════════════════════ 2 ═══════════════════════ -->
+<div class="part-header" id="s2">
+  <div class="part-label">Chapter 2</div>
+  <h2>Variational Autoencoders</h2>
+</div>
+
+<div class="paper-ref">
+  <strong>Kingma & Welling (2014)</strong> — "Auto-Encoding Variational Bayes." Introduced a practical framework for training latent variable models using a combination of neural networks and variational inference.
+</div>
+
+<div class="intuition">
+  You want to learn a model that can <em>generate</em> new data. The idea: data is generated from low-dimensional latent variables \(\mathbf{z}\) (e.g., "style," "content," "pose" for face images). But you can't observe \(\mathbf{z}\) directly — you need to infer it. VAEs solve this with a clever combination of an encoder (infers \(\mathbf{z}\) from data) and a decoder (generates data from \(\mathbf{z}\)).
+</div>
+
+<h3>The Generative Model</h3>
+<div class="math-block">
+  $$p(\mathbf{x}) = \int p(\mathbf{x} \mid \mathbf{z}) p(\mathbf{z}) d\mathbf{z}$$
+</div>
+<p>Where \(p(\mathbf{z}) = \mathcal{N}(\mathbf{0}, \mathbf{I})\) (prior) and \(p(\mathbf{x} \mid \mathbf{z}) = \text{Decoder}_\theta(\mathbf{z})\). The integral is intractable (we'd need to integrate over all possible \(\mathbf{z}\)), so we can't compute \(p(\mathbf{x})\) or maximize it directly.</p>
+
+<h3>The ELBO — Evidence Lower Bound</h3>
+
+<p>Introduce an approximate posterior \(q_\phi(\mathbf{z} \mid \mathbf{x})\) (the encoder). We can show:</p>
+<div class="math-block">
+  <span class="label">ELBO Derivation</span>
+  $$\log p(\mathbf{x}) = \underbrace{\mathbb{E}_{q_\phi(\mathbf{z}|\mathbf{x})}[\log p_\theta(\mathbf{x} \mid \mathbf{z})]}_{\text{reconstruction}} - \underbrace{D_{\text{KL}}(q_\phi(\mathbf{z} \mid \mathbf{x}) \| p(\mathbf{z}))}_{\text{regularization}} + \underbrace{D_{\text{KL}}(q_\phi(\mathbf{z} \mid \mathbf{x}) \| p(\mathbf{z} \mid \mathbf{x}))}_{\geq 0 \text{ (gap)}}$$
+</div>
+<p>Since the last term \(\geq 0\), the first two terms form a <strong>lower bound</strong> on \(\log p(\mathbf{x})\):</p>
+<div class="math-block">
+  <span class="label">ELBO</span>
+  $$\text{ELBO}(\theta, \phi; \mathbf{x}) = \mathbb{E}_{q_\phi}[\log p_\theta(\mathbf{x} \mid \mathbf{z})] - D_{\text{KL}}(q_\phi(\mathbf{z} \mid \mathbf{x}) \| p(\mathbf{z})) \leq \log p(\mathbf{x})$$
+</div>
+<p>
+  <strong>Term 1 (Reconstruction):</strong> How well can the decoder reconstruct \(\mathbf{x}\) from \(\mathbf{z}\)? Encourages accurate encoding.<br>
+  <strong>Term 2 (KL Regularizer):</strong> How close is the encoder's posterior to the prior? Prevents the encoder from "cheating" by making each \(\mathbf{z}\) unique to each \(\mathbf{x}\).
+</p>
+
+<h3>The Reparameterization Trick</h3>
+<p>Problem: we need to backpropagate through the sampling operation \(\mathbf{z} \sim q_\phi(\mathbf{z} \mid \mathbf{x})\). Sampling is not differentiable. Solution: reparameterize.</p>
+<div class="math-block">
+  <span class="label">Reparameterization</span>
+  $$\mathbf{z} = \boldsymbol{\mu}_\phi(\mathbf{x}) + \boldsymbol{\sigma}_\phi(\mathbf{x}) \odot \boldsymbol{\epsilon}, \quad \boldsymbol{\epsilon} \sim \mathcal{N}(\mathbf{0}, \mathbf{I})$$
+</div>
+<p>Now the randomness is in \(\boldsymbol{\epsilon}\), which doesn't depend on \(\phi\). Gradients flow through \(\boldsymbol{\mu}\) and \(\boldsymbol{\sigma}\) normally.</p>
+
+<div class="separator">· · ·</div>
+
+
+<!-- ═══════════════════════ 3 ═══════════════════════ -->
+<div class="part-header" id="s3">
+  <div class="part-label">Chapter 3</div>
+  <h2>Generative Adversarial Networks</h2>
+</div>
+
+<div class="paper-ref">
+  <strong>Goodfellow et al. (2014)</strong> — "Generative Adversarial Nets." Introduced the adversarial training framework: a generator learns to produce realistic data while a discriminator learns to distinguish real from fake. One of the most creative ideas in ML.
+</div>
+
+<h3>The Minimax Game</h3>
+<div class="math-block">
+  <span class="label">GAN Objective</span>
+  $$\min_G \max_D \; \mathbb{E}_{\mathbf{x} \sim p_{\text{data}}}[\log D(\mathbf{x})] + \mathbb{E}_{\mathbf{z} \sim p(\mathbf{z})}[\log(1 - D(G(\mathbf{z})))]$$
+</div>
+<p>
+  \(D(\mathbf{x})\) is the discriminator's estimate that \(\mathbf{x}\) is real. \(G(\mathbf{z})\) is the generator's output from noise \(\mathbf{z}\). The discriminator maximizes (get better at distinguishing). The generator minimizes (fool the discriminator).
+</p>
+
+<h4>At Nash Equilibrium</h4>
+<p>Goodfellow proved that the optimal discriminator is \(D^*(\mathbf{x}) = \frac{p_{\text{data}}(\mathbf{x})}{p_{\text{data}}(\mathbf{x}) + p_g(\mathbf{x})}\). Substituting this back, the generator's loss becomes \(2 \cdot D_{\text{JS}}(p_{\text{data}} \| p_g) - \log 4\), where \(D_{\text{JS}}\) is the Jensen-Shannon divergence. At equilibrium: \(p_g = p_{\text{data}}\) and \(D(\mathbf{x}) = 0.5\) everywhere.</p>
+
+<div class="intuition">
+  GANs convert the problem of density estimation (hard) into a classification problem (easier). Instead of asking "what's the probability of this image?", they ask "can you tell if this image is real or fake?" — which is a much more tractable question.
+</div>
+
+<div class="separator">· · ·</div>
+
+
+<!-- ═══════════════════════ 4 ═══════════════════════ -->
+<div class="part-header" id="s4">
+  <div class="part-label">Chapter 4</div>
+  <h2>Diffusion Models</h2>
+</div>
+
+<div class="paper-ref">
+  <strong>Ho, Jain & Abbeel (2020)</strong> — "Denoising Diffusion Probabilistic Models" (DDPM). Showed that iteratively denoising Gaussian noise can generate high-quality images, establishing diffusion models as the new state-of-the-art for image generation. The foundation of Stable Diffusion, DALL-E 2, and Midjourney.
+</div>
+
+<div class="intuition">
+  Imagine you have a beautiful photograph. You gradually add noise to it, step by step, until it becomes pure static. Now train a neural network to reverse each step — to slightly denoise the image. If you can do this perfectly, you can start from pure noise and iteratively refine it into a photograph.
+</div>
+
+<h3>Forward Process (Adding Noise)</h3>
+<div class="math-block">
+  <span class="label">Forward Diffusion</span>
+  $$q(\mathbf{x}_t \mid \mathbf{x}_{t-1}) = \mathcal{N}(\mathbf{x}_t; \sqrt{1-\beta_t}\,\mathbf{x}_{t-1}, \beta_t \mathbf{I})$$
+</div>
+<p>At each step \(t\), add a small amount of Gaussian noise controlled by \(\beta_t\). After \(T\) steps (typically 1000), \(\mathbf{x}_T \approx \mathcal{N}(\mathbf{0}, \mathbf{I})\). A key result lets us jump directly to any step:</p>
+<div class="math-block">
+  $$q(\mathbf{x}_t \mid \mathbf{x}_0) = \mathcal{N}(\mathbf{x}_t; \sqrt{\bar{\alpha}_t}\,\mathbf{x}_0, (1-\bar{\alpha}_t)\mathbf{I})$$
+  $$\text{where } \alpha_t = 1 - \beta_t, \quad \bar{\alpha}_t = \prod_{s=1}^{t}\alpha_s$$
+</div>
+
+<h3>Reverse Process (Denoising)</h3>
+<p>The reverse process is also Gaussian for small \(\beta_t\):</p>
+<div class="math-block">
+  <span class="label">Learned Reverse Process</span>
+  $$p_\theta(\mathbf{x}_{t-1} \mid \mathbf{x}_t) = \mathcal{N}(\mathbf{x}_{t-1}; \boldsymbol{\mu}_\theta(\mathbf{x}_t, t), \sigma_t^2 \mathbf{I})$$
+</div>
+
+<h3>Training Objective — Predict the Noise</h3>
+<p>Instead of predicting \(\boldsymbol{\mu}\) directly, DDPM reparameterizes to predict the noise \(\boldsymbol{\epsilon}\) that was added:</p>
+<div class="math-block">
+  <span class="label">DDPM Training Loss (simplified)</span>
+  $$\mathcal{L} = \mathbb{E}_{t, \mathbf{x}_0, \boldsymbol{\epsilon}}\left[\|\boldsymbol{\epsilon} - \boldsymbol{\epsilon}_\theta(\sqrt{\bar{\alpha}_t}\,\mathbf{x}_0 + \sqrt{1-\bar{\alpha}_t}\,\boldsymbol{\epsilon}, \; t)\|^2\right]$$
+</div>
+<p>
+  <strong>In plain English:</strong> Sample a training image \(\mathbf{x}_0\). Pick a random noise level \(t\). Add noise to get \(\mathbf{x}_t\). Train the network \(\boldsymbol{\epsilon}_\theta\) to predict what noise was added. That's it — an MSE loss on noise prediction.
+</p>
+
+<h3>Sampling (Generation)</h3>
+<p>Start from \(\mathbf{x}_T \sim \mathcal{N}(\mathbf{0}, \mathbf{I})\). For \(t = T, T-1, \ldots, 1\):</p>
+<div class="math-block">
+  $$\mathbf{x}_{t-1} = \frac{1}{\sqrt{\alpha_t}}\left(\mathbf{x}_t - \frac{\beta_t}{\sqrt{1-\bar{\alpha}_t}} \boldsymbol{\epsilon}_\theta(\mathbf{x}_t, t)\right) + \sigma_t \mathbf{z}$$
+</div>
+<p>Each step removes a bit of predicted noise, gradually revealing a clean image.</p>
+
+<div class="deep">
+  <strong>Connection to score matching:</strong> The noise predictor \(\boldsymbol{\epsilon}_\theta\) is directly related to the score function (gradient of log probability): \(\nabla_{\mathbf{x}} \log p(\mathbf{x}_t) \propto -\boldsymbol{\epsilon}_\theta(\mathbf{x}_t, t) / \sqrt{1-\bar{\alpha}_t}\). Diffusion models are essentially learning the score at every noise level, then using it to denoise via Langevin dynamics.
+</div>
+
+<div class="separator">· · ·</div>
+
+
+<!-- ═══════════════════════ 5 ═══════════════════════ -->
+<div class="part-header" id="s5">
+  <div class="part-label">Chapter 5</div>
+  <h2>The Geometry of Neural Networks</h2>
+</div>
+
+<h3>Loss Landscapes</h3>
+<p>The loss function \(\mathcal{L}(\theta)\) defines a surface over the parameter space \(\theta \in \mathbb{R}^d\). For a 7B parameter model, this is a surface in 7-billion-dimensional space. Despite the extreme dimensionality, some universal properties emerge:</p>
+
+<p><strong>Saddle points dominate over local minima.</strong> In high dimensions, a critical point (where \(\nabla\mathcal{L} = 0\)) is a local minimum only if <em>all</em> eigenvalues of the Hessian are positive. The probability of this decreases exponentially with dimension. Most critical points are <strong>saddle points</strong> — local minima along some directions, local maxima along others. SGD's noise helps it escape these.</p>
+
+<p><strong>Connected low-loss regions.</strong> Different solutions (minima) in parameter space tend to be connected by paths of low loss — the "mode connectivity" phenomenon. This suggests the loss landscape is more like a valley system than isolated basins.</p>
+
+<h3>The Lottery Ticket Hypothesis</h3>
+<div class="paper-ref">
+  <strong>Frankle & Carlin (2019)</strong> — "The Lottery Ticket Hypothesis." Dense, randomly-initialized networks contain sparse subnetworks ("winning tickets") that, when trained in isolation, reach comparable accuracy. Implication: most parameters in a trained network are redundant — the network is dramatically overparameterized.
+</div>
+
+<h3>Double Descent</h3>
+<p>Classical ML says: more parameters → overfitting → worse test error (bias-variance tradeoff). But modern deep learning contradicts this — test error first decreases, then increases (interpolation threshold), then <em>decreases again</em> as you add more parameters.</p>
+
+<div class="math-block">
+  <span class="label">Double Descent Phenomenon</span>
+  $$\text{Test error} \sim \begin{cases}\text{decreasing} & \text{(underfitting regime)} \\ \text{spike} & \text{(interpolation threshold: params ≈ data)} \\ \text{decreasing again} & \text{(overparameterized regime)}\end{cases}$$
+</div>
+
+<div class="intuition">
+  In the overparameterized regime, there are many solutions that fit the training data perfectly. SGD with implicit regularization (from the initialization, learning rate, and noise) selects the "simplest" interpolating solution — which generalizes well. More parameters = more interpolating solutions to choose from = better chance of finding a simple one.
+</div>
+
+<div class="separator">· · ·</div>
+
+
+<!-- ═══════════════════════ 6 ═══════════════════════ -->
+<div class="part-header" id="s6">
+  <div class="part-label">Chapter 6</div>
+  <h2>Information Bottleneck & Generalization</h2>
+</div>
+
+<h3>The Bias-Variance Decomposition</h3>
+<div class="math-block">
+  <span class="label">Bias-Variance Decomposition</span>
+  $$\mathbb{E}[(y - \hat{f}(\mathbf{x}))^2] = \underbrace{\text{Bias}^2[\hat{f}]}_{\text{model too simple}} + \underbrace{\text{Var}[\hat{f}]}_{\text{model too complex}} + \underbrace{\sigma^2_\epsilon}_{\text{irreducible noise}}$$
+</div>
+
+<p><strong>Bias:</strong> error from approximation assumptions (linear model for nonlinear data). <strong>Variance:</strong> error from sensitivity to training data fluctuations (overfitting). The classic tradeoff: increasing model complexity reduces bias but increases variance. But deep networks break this tradeoff in the overparameterized regime.</p>
+
+<h3>The Information Bottleneck</h3>
+
+<div class="paper-ref">
+  <strong>Tishby & Zaslavsky (2015)</strong> — "Deep Learning and the Information Bottleneck Principle." Proposed that deep networks learn by first fitting the data (memorization), then compressing the representation (generalization). Each layer forms an information bottleneck that keeps the information relevant for the task while discarding noise.
+</div>
+
+<div class="math-block">
+  <span class="label">Information Bottleneck Objective</span>
+  $$\min_{p(\hat{x}|x)} I(X; \hat{X}) - \beta \cdot I(\hat{X}; Y)$$
+</div>
+<p>Minimize information about the input \(X\) kept in the representation \(\hat{X}\), while maximizing information about the label \(Y\). The tradeoff is controlled by \(\beta\). In deep networks, each hidden layer can be seen as a point on this information curve.</p>
+
+<h3>PAC Learning — Theoretical Bounds</h3>
+<p>Probably Approximately Correct (PAC) learning provides guarantees: with probability at least \(1-\delta\), the model's true error is within \(\epsilon\) of the training error, provided the training set is large enough:</p>
+<div class="math-block">
+  $$N \geq \frac{1}{\epsilon}\left(\ln|\mathcal{H}| + \ln\frac{1}{\delta}\right)$$
+</div>
+<p>Where \(|\mathcal{H}|\) is the hypothesis class size. For neural networks, classical bounds based on parameter count are extremely loose — a 7B parameter model would theoretically need astronomically more data than it actually uses. This gap between theory and practice is one of the great open problems in ML theory.</p>
+
+<div class="separator">· · ·</div>
+
+
+<!-- ═══════════════════════ 7 ═══════════════════════ -->
+<div class="part-header" id="s7">
+  <div class="part-label">Chapter 7</div>
+  <h2>Advanced Probability for ML</h2>
+</div>
+
+<h3>Exponential Family Distributions</h3>
+<p>Most distributions used in ML belong to the exponential family:</p>
+<div class="math-block">
+  <span class="label">Exponential Family</span>
+  $$p(\mathbf{x} \mid \boldsymbol{\eta}) = h(\mathbf{x}) \exp(\boldsymbol{\eta}^T T(\mathbf{x}) - A(\boldsymbol{\eta}))$$
+</div>
+<p>Where \(\boldsymbol{\eta}\) are natural parameters, \(T(\mathbf{x})\) are sufficient statistics, and \(A(\boldsymbol{\eta})\) is the log-partition function. Gaussian, Bernoulli, Poisson, Gamma, Categorical — all are exponential family. This unifies GLMs (generalized linear models): logistic regression is an exponential family model with Bernoulli likelihood and logit link.</p>
+
+<div class="deep">
+  <strong>Why this matters for deep learning:</strong> The softmax output layer is a natural parameterization for the Categorical exponential family. The cross-entropy loss equals the negative log-likelihood of this family. The "elegant gradient" \(\delta = \hat{y} - y\) that we proved in Part II holds for <em>all</em> exponential family GLMs — it's not specific to sigmoid or softmax. This is the deep mathematical reason why our gradient formulas are so clean.
+</div>
+
+<h3>Variational Inference</h3>
+<p>When the true posterior \(p(\mathbf{z} \mid \mathbf{x})\) is intractable, approximate it with a simpler distribution \(q_\phi(\mathbf{z})\) by minimizing:</p>
+<div class="math-block">
+  $$q^* = \arg\min_{q \in \mathcal{Q}} D_{\text{KL}}(q(\mathbf{z}) \| p(\mathbf{z} \mid \mathbf{x}))$$
+</div>
+<p>This is the principle behind VAEs, Bayesian neural networks, and many probabilistic models. The choice of family \(\mathcal{Q}\) trades off expressiveness vs. tractability. Common choice: mean-field (factorized Gaussian) or normalizing flows (flexible, invertible transforms).</p>
+
+<h3>Monte Carlo Methods (MCMC)</h3>
+<p>When variational approximation is insufficient, we can draw samples from the posterior using Markov Chain Monte Carlo:</p>
+<div class="math-block">
+  <span class="label">Metropolis-Hastings</span>
+  $$\alpha = \min\!\left(1, \frac{p(\mathbf{z}')p(\mathbf{z} \mid \mathbf{z}')}{p(\mathbf{z})p(\mathbf{z}' \mid \mathbf{z})}\right) \quad \text{(acceptance probability)}$$
+</div>
+<p>Propose a new state \(\mathbf{z}'\), accept with probability \(\alpha\). The resulting chain of samples converges to the target distribution. Modern variants (Hamiltonian Monte Carlo, NUTS) use gradient information for efficient exploration, but MCMC remains too slow for large neural networks — which is why variational methods dominate in deep learning.</p>
+
+<div class="exercise">
+  <strong>(a)</strong> Derive the KL divergence between two Gaussians: \(D_{\text{KL}}(\mathcal{N}(\mu_1, \sigma_1^2) \| \mathcal{N}(\mu_2, \sigma_2^2))\). This appears in the VAE loss.<br>
+  <strong>(b)</strong> In a diffusion model with \(T = 1000\) steps and linear schedule \(\beta_t\) from 0.0001 to 0.02, compute \(\bar{\alpha}_{1000}\). How close is \(\mathbf{x}_{1000}\) to pure noise?<br>
+  <strong>(c)</strong> The information bottleneck says early training = memorization, late training = compression. How would you test this experimentally using mutual information estimates?
+</div>
+
+<div style="text-align:center;padding:3rem 0;color:var(--text-secondary);font-family:'Source Sans 3',sans-serif;font-size:0.9rem;">
+  <em>The theoretical structures in this volume aren't just abstract — they explain why every practical technique<br>
+  in Parts I–IV works. Information theory tells us why cross-entropy is optimal. The ELBO tells us how to<br>
+  train generative models. Double descent tells us why overparameterized models don't overfit.<br>
+  Theory and practice illuminate each other.</em>
+</div>
+
+</div>
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+  renderMathInElement(document.body, { delimiters: [{left:"$$",right:"$$",display:true},{left:"\\(",right:"\\)",display:false}], throwOnError:false });
+});
+</script>
+</body>
+</html>

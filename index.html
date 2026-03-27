@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ML First Principles — Complete Course</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Crimson+Pro:wght@300;400;500;600;700&family=Source+Sans+3:wght@300;400;500;600;700&display=swap">
+<style>
+  :root {
+    --bg: #faf8f5;
+    --bg-alt: #f0ece6;
+    --text: #1a1a1a;
+    --text-secondary: #555;
+    --border: #d4cfc7;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: 'Source Sans 3', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.6;
+    min-height: 100vh;
+  }
+  .hero {
+    text-align: center;
+    padding: 80px 20px 50px;
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+    color: #fff;
+  }
+  .hero h1 {
+    font-family: 'Crimson Pro', serif;
+    font-size: 3rem;
+    font-weight: 600;
+    margin-bottom: 12px;
+    letter-spacing: -0.5px;
+  }
+  .hero p {
+    font-size: 1.2rem;
+    opacity: 0.85;
+    max-width: 600px;
+    margin: 0 auto;
+    font-weight: 300;
+  }
+  .parts-grid {
+    max-width: 900px;
+    margin: -30px auto 60px;
+    padding: 0 20px;
+    display: grid;
+    gap: 16px;
+  }
+  .part-card {
+    background: #fff;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 28px 32px;
+    text-decoration: none;
+    color: var(--text);
+    transition: transform 0.2s, box-shadow 0.2s;
+    display: grid;
+    grid-template-columns: 60px 1fr;
+    align-items: center;
+    gap: 20px;
+  }
+  .part-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+  }
+  .part-number {
+    font-family: 'Crimson Pro', serif;
+    font-size: 1.6rem;
+    font-weight: 700;
+    width: 56px;
+    height: 56px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    flex-shrink: 0;
+  }
+  .part-info h2 {
+    font-family: 'Crimson Pro', serif;
+    font-size: 1.35rem;
+    font-weight: 600;
+    margin-bottom: 4px;
+  }
+  .part-info p {
+    color: var(--text-secondary);
+    font-size: 0.95rem;
+    line-height: 1.5;
+  }
+  .part-card:nth-child(1) .part-number { background: #b44a2f; }
+  .part-card:nth-child(2) .part-number { background: #6b5ca5; }
+  .part-card:nth-child(3) .part-number { background: #2e7d6b; }
+  .part-card:nth-child(4) .part-number { background: #c47a2a; }
+  .part-card:nth-child(5) .part-number { background: #2a6fb4; }
+  .part-card:nth-child(6) .part-number { background: #8e4e6b; }
+  .part-card:nth-child(7) .part-number { background: #4a7d2e; }
+  .part-card:nth-child(8) .part-number { background: #5a3d8a; }
+
+  footer {
+    text-align: center;
+    padding: 30px 20px;
+    color: var(--text-secondary);
+    font-size: 0.85rem;
+    border-top: 1px solid var(--border);
+    max-width: 900px;
+    margin: 0 auto;
+  }
+
+  @media (max-width: 600px) {
+    .hero h1 { font-size: 2rem; }
+    .hero { padding: 50px 20px 40px; }
+    .part-card { grid-template-columns: 48px 1fr; padding: 20px; gap: 14px; }
+    .part-number { width: 48px; height: 48px; font-size: 1.3rem; }
+    .part-info h2 { font-size: 1.15rem; }
+  }
+</style>
+</head>
+<body>
+
+<div class="hero">
+  <h1>Machine Learning from First Principles</h1>
+  <p>A complete mathematical journey from linear algebra to modern LLMs — every equation derived, every concept connected.</p>
+</div>
+
+<div class="parts-grid">
+  <a href="ml-first-principles-to-nlp.html" class="part-card">
+    <div class="part-number">I</div>
+    <div class="part-info">
+      <h2>Foundations</h2>
+      <p>Linear algebra, probability, Bayes theorem, MLE, key distributions, gradients, SGD, and the chain rule — the mathematical toolkit for everything ahead.</p>
+    </div>
+  </a>
+
+  <a href="ml-deep-dives-and-implementation.html" class="part-card">
+    <div class="part-number">II</div>
+    <div class="part-info">
+      <h2>Deep Dives &amp; Implementation</h2>
+      <p>Full derivations of linear regression (Gaussian MLE → MSE → normal equation) and logistic regression (Bernoulli MLE → cross-entropy → sigmoid gradient).</p>
+    </div>
+  </a>
+
+  <a href="ml-advanced-topics-and-solutions.html" class="part-card">
+    <div class="part-number">III</div>
+    <div class="part-info">
+      <h2>Advanced Topics &amp; Practice</h2>
+      <p>Neural networks from a single neuron through MLPs, with complete step-by-step backpropagation derivation and worked numerical examples.</p>
+    </div>
+  </a>
+
+  <a href="ml-part4-pytorch.html" class="part-card">
+    <div class="part-number">IV</div>
+    <div class="part-info">
+      <h2>PyTorch Implementation Cookbook</h2>
+      <p>CNNs as pattern matching, hierarchical feature learning, RNNs/LSTMs with gating mechanisms, and the vanishing gradient solution.</p>
+    </div>
+  </a>
+
+  <a href="ml-part5-theory.html" class="part-card">
+    <div class="part-number">V</div>
+    <div class="part-info">
+      <h2>Information Theory &amp; Advanced Math</h2>
+      <p>Word2Vec skip-gram with negative sampling, GloVe's co-occurrence objective, BPE tokenization, and information-theoretic foundations.</p>
+    </div>
+  </a>
+
+  <a href="ml-part6-production-glossary.html" class="part-card">
+    <div class="part-number">VI</div>
+    <div class="part-info">
+      <h2>Production &amp; Deployment</h2>
+      <p>Dot-product attention from first principles, self-attention, multi-head attention, the full transformer architecture, positional encoding, and causal masking.</p>
+    </div>
+  </a>
+
+  <a href="ml-part7-end-to-end-projects.html" class="part-card">
+    <div class="part-number">VII</div>
+    <div class="part-info">
+      <h2>End-to-End Projects</h2>
+      <p>GPT's next-token prediction, scaling laws, RMSNorm, RoPE, SwiGLU, GQA, Mixture of Experts, and RLHF/DPO alignment.</p>
+    </div>
+  </a>
+
+  <a href="ml-part8-frontier-open-problems.html" class="part-card">
+    <div class="part-number">VIII</div>
+    <div class="part-info">
+      <h2>The Frontier</h2>
+      <p>A unified view: geometric (space-warping), probabilistic (posterior estimation), and similarity-based (attention as learned similarity) interpretations.</p>
+    </div>
+  </a>
+</div>
+
+<footer>
+  ML First Principles — From Linear Algebra to Large Language Models
+</footer>
+
+</body>
+</html>

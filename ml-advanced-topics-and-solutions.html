@@ -1,0 +1,907 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ML First Principles — Part III: Advanced Topics & Practice</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Crimson+Pro:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400;1,500&family=JetBrains+Mono:wght@400;500&family=Source+Sans+3:wght@300;400;500;600;700&display=swap');
+
+  :root {
+    --bg: #faf8f5;
+    --bg-alt: #f0ece6;
+    --bg-code: #1e1e2e;
+    --text: #1a1a1a;
+    --text-secondary: #555;
+    --accent: #2e7d6b;
+    --accent-light: #d2e8e2;
+    --accent-dark: #1b5e4a;
+    --border: #d4cfc7;
+    --math-bg: #fdfcfa;
+    --exercise-bg: #eef4e8;
+    --exercise-border: #6b8e4e;
+    --paper-bg: #f5f0e8;
+    --paper-border: #c4a97d;
+    --insight-bg: #e8eef5;
+    --insight-border: #4a6fa5;
+    --warning-bg: #fdf0e0;
+    --warning-border: #d4940a;
+    --impl-bg: #f0f5f0;
+    --impl-border: #3a7a5a;
+    --deep-bg: #f5f0f8;
+    --deep-border: #7a5ca5;
+    --solution-bg: #f8f5f0;
+    --solution-border: #8a7a5a;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Crimson Pro', Georgia, serif;
+    font-size: 19px;
+    line-height: 1.72;
+    color: var(--text);
+    background: var(--bg);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .container { max-width: 820px; margin: 0 auto; padding: 3rem 2rem 6rem; }
+
+  .hero { text-align: center; padding: 4rem 0 3rem; border-bottom: 3px double var(--border); margin-bottom: 3rem; }
+  .hero h1 { font-family: 'Crimson Pro', serif; font-weight: 700; font-size: 2.4rem; line-height: 1.2; color: var(--accent-dark); letter-spacing: -0.02em; margin-bottom: 0.5rem; }
+  .hero .subtitle { font-family: 'Source Sans 3', sans-serif; font-weight: 300; font-size: 1.05rem; color: var(--text-secondary); letter-spacing: 0.04em; text-transform: uppercase; }
+
+  .toc { background: var(--bg-alt); border: 1px solid var(--border); border-radius: 4px; padding: 2rem 2.5rem; margin-bottom: 3rem; }
+  .toc h2 { font-family: 'Source Sans 3', sans-serif; font-weight: 700; font-size: 1rem; text-transform: uppercase; letter-spacing: 0.12em; color: var(--accent); margin-bottom: 1rem; }
+  .toc ol { list-style: none; counter-reset: toc-counter; }
+  .toc > ol > li { counter-increment: toc-counter; margin-bottom: 0.3rem; }
+  .toc > ol > li::before { content: counter(toc-counter, upper-roman) ". "; font-weight: 600; color: var(--accent); }
+  .toc a { color: var(--text); text-decoration: none; border-bottom: 1px solid transparent; font-size: 1rem; font-family: 'Source Sans 3', sans-serif; }
+  .toc a:hover { border-bottom-color: var(--accent); }
+  .toc .sub { padding-left: 2rem; margin-top: 0.2rem; }
+  .toc .sub li { font-size: 0.92rem; color: var(--text-secondary); margin-bottom: 0.15rem; }
+
+  .part-header { text-align: center; padding: 3rem 0 1.5rem; margin: 4rem 0 2rem; border-top: 3px double var(--border); }
+  .part-header .part-label { font-family: 'Source Sans 3', sans-serif; font-weight: 700; text-transform: uppercase; letter-spacing: 0.2em; font-size: 0.8rem; color: var(--accent); }
+  .part-header h2 { font-family: 'Crimson Pro', serif; font-weight: 700; font-size: 2rem; color: var(--accent-dark); margin-top: 0.3rem; }
+
+  h3 { font-family: 'Crimson Pro', serif; font-weight: 600; font-size: 1.5rem; color: var(--accent-dark); margin: 3rem 0 1rem; padding-bottom: 0.3rem; border-bottom: 1px solid var(--border); }
+  h4 { font-family: 'Source Sans 3', sans-serif; font-weight: 600; font-size: 1.05rem; color: var(--text); margin: 2rem 0 0.7rem; text-transform: uppercase; letter-spacing: 0.06em; }
+  h5 { font-family: 'Source Sans 3', sans-serif; font-weight: 600; font-size: 0.95rem; color: var(--accent); margin: 1.5rem 0 0.5rem; }
+
+  p { margin-bottom: 1rem; }
+  strong { font-weight: 600; }
+  em { font-style: italic; }
+
+  .math-block { background: var(--math-bg); border-left: 3px solid var(--accent); padding: 1.2rem 1.5rem; margin: 1.5rem 0; overflow-x: auto; border-radius: 0 4px 4px 0; }
+  .math-block .label { font-family: 'Source Sans 3', sans-serif; font-size: 0.78rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.1em; color: var(--accent); display: block; margin-bottom: 0.5rem; }
+
+  .intuition { background: var(--insight-bg); border-left: 3px solid var(--insight-border); padding: 1.2rem 1.5rem; margin: 1.5rem 0; border-radius: 0 4px 4px 0; }
+  .intuition::before { content: "💡 Intuition"; font-family: 'Source Sans 3', sans-serif; font-size: 0.78rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: var(--insight-border); display: block; margin-bottom: 0.5rem; }
+
+  .exercise { background: var(--exercise-bg); border-left: 3px solid var(--exercise-border); padding: 1.2rem 1.5rem; margin: 1.5rem 0; border-radius: 0 4px 4px 0; }
+  .exercise::before { content: "✏️ Exercise"; font-family: 'Source Sans 3', sans-serif; font-size: 0.78rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: var(--exercise-border); display: block; margin-bottom: 0.5rem; }
+
+  .paper-ref { background: var(--paper-bg); border-left: 3px solid var(--paper-border); padding: 1.2rem 1.5rem; margin: 1.5rem 0; border-radius: 0 4px 4px 0; }
+  .paper-ref::before { content: "📄 Key Paper"; font-family: 'Source Sans 3', sans-serif; font-size: 0.78rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: var(--paper-border); display: block; margin-bottom: 0.5rem; }
+
+  .warning { background: var(--warning-bg); border-left: 3px solid var(--warning-border); padding: 1.2rem 1.5rem; margin: 1.5rem 0; border-radius: 0 4px 4px 0; }
+  .warning::before { content: "⚠️ Common Mistake"; font-family: 'Source Sans 3', sans-serif; font-size: 0.78rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: var(--warning-border); display: block; margin-bottom: 0.5rem; }
+
+  .impl { background: var(--impl-bg); border-left: 3px solid var(--impl-border); padding: 1.2rem 1.5rem; margin: 1.5rem 0; border-radius: 0 4px 4px 0; }
+  .impl::before { content: "🔧 Implementation"; font-family: 'Source Sans 3', sans-serif; font-size: 0.78rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: var(--impl-border); display: block; margin-bottom: 0.5rem; }
+
+  .deep { background: var(--deep-bg); border-left: 3px solid var(--deep-border); padding: 1.2rem 1.5rem; margin: 1.5rem 0; border-radius: 0 4px 4px 0; }
+  .deep::before { content: "🔬 Deep Dive"; font-family: 'Source Sans 3', sans-serif; font-size: 0.78rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: var(--deep-border); display: block; margin-bottom: 0.5rem; }
+
+  .example { background: #fff; border: 1px solid var(--border); padding: 1.2rem 1.5rem; margin: 1.5rem 0; border-radius: 4px; }
+  .example::before { content: "🔢 Worked Example"; font-family: 'Source Sans 3', sans-serif; font-size: 0.78rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-secondary); display: block; margin-bottom: 0.5rem; }
+
+  .solution { background: var(--solution-bg); border-left: 3px solid var(--solution-border); padding: 1.2rem 1.5rem; margin: 1.5rem 0; border-radius: 0 4px 4px 0; }
+  .solution::before { content: "✅ Solution"; font-family: 'Source Sans 3', sans-serif; font-size: 0.78rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: var(--solution-border); display: block; margin-bottom: 0.5rem; }
+
+  code { font-family: 'JetBrains Mono', monospace; font-size: 0.85em; background: var(--bg-alt); padding: 0.15em 0.4em; border-radius: 3px; }
+  pre { background: var(--bg-code); color: #cdd6f4; padding: 1.2rem 1.5rem; border-radius: 4px; overflow-x: auto; margin: 1.5rem 0; font-family: 'JetBrains Mono', monospace; font-size: 0.82rem; line-height: 1.55; }
+  pre .comment { color: #6c7086; } pre .keyword { color: #cba6f7; } pre .string { color: #a6e3a1; } pre .number { color: #fab387; } pre .func { color: #89b4fa; }
+
+  table { width: 100%; border-collapse: collapse; margin: 1.5rem 0; font-size: 0.95rem; }
+  th, td { padding: 0.6rem 1rem; text-align: left; border-bottom: 1px solid var(--border); }
+  th { font-family: 'Source Sans 3', sans-serif; font-weight: 600; font-size: 0.82rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--accent-dark); border-bottom: 2px solid var(--accent); }
+
+  .separator { text-align: center; margin: 3rem 0; color: var(--border); letter-spacing: 0.5em; }
+
+  .ascii-diagram { background: var(--bg-alt); border: 1px solid var(--border); padding: 1.5rem; margin: 1.5rem 0; border-radius: 4px; font-family: 'JetBrains Mono', monospace; font-size: 0.78rem; line-height: 1.4; white-space: pre; overflow-x: auto; color: var(--text); }
+
+  details { margin: 1rem 0; }
+  details summary { cursor: pointer; font-family: 'Source Sans 3', sans-serif; font-weight: 600; color: var(--accent-dark); padding: 0.5rem 0; }
+  details summary:hover { color: var(--accent); }
+
+  .katex-display { margin: 0.8rem 0 !important; }
+  .katex { font-size: 1.05em; }
+
+  @media (max-width: 700px) { .container { padding: 1.5rem 1rem 4rem; } .hero h1 { font-size: 1.8rem; } body { font-size: 17px; } .ascii-diagram { font-size: 0.65rem; } }
+</style>
+</head>
+<body>
+<style>
+.course-nav{position:sticky;top:0;z-index:1000;background:#1a1a2e;padding:10px 20px;display:flex;justify-content:space-between;align-items:center;font-family:'Source Sans 3',sans-serif;font-size:0.9rem;box-shadow:0 2px 8px rgba(0,0,0,0.15)}
+.course-nav a{color:#ccc;text-decoration:none;transition:color 0.2s}
+.course-nav a:hover{color:#fff}
+.course-nav .nav-home{font-weight:600;color:#fff}
+.course-nav .nav-prev,.course-nav .nav-next{min-width:120px}
+.course-nav .nav-next{text-align:right}
+</style>
+<nav class="course-nav">
+<div class="nav-prev"><a href="ml-deep-dives-and-implementation.html">&larr; Part II: Deep Dives</a></div>
+<div><a href="index.html" class="nav-home">ML First Principles</a></div>
+<div class="nav-next"><a href="ml-part4-pytorch.html">Part IV: PyTorch &rarr;</a></div>
+</nav>
+<div class="container">
+
+<div class="hero">
+  <div class="subtitle">Companion Volume III — Frontier Topics & Complete Solutions</div>
+  <h1>ML First Principles, Part III:<br>Advanced Topics & Practice</h1>
+  <p style="margin-top:1rem; color:var(--text-secondary); font-size:0.95rem;">
+    Efficient attention, parameter-efficient fine-tuning, quantization, reasoning models,<br>
+    multi-modal architectures, RAG, evaluation — and solutions to every exercise.
+  </p>
+</div>
+
+<div class="toc">
+  <h2>Contents</h2>
+  <ol>
+    <li><a href="#sec-efficient">Efficient Attention & Long Context</a>
+      <ul class="sub"><li>Flash Attention · Sliding Window · Linear Attention · RoPE Scaling</li></ul>
+    </li>
+    <li><a href="#sec-finetune">Parameter-Efficient Fine-Tuning</a>
+      <ul class="sub"><li>Full fine-tuning · LoRA derivation · QLoRA · Adapters · Prefix Tuning</li></ul>
+    </li>
+    <li><a href="#sec-quant">Quantization</a>
+      <ul class="sub"><li>INT8 · GPTQ · AWQ · GGUF · Why 4-bit works</li></ul>
+    </li>
+    <li><a href="#sec-reasoning">Reasoning Models & Chain-of-Thought</a>
+      <ul class="sub"><li>CoT prompting · Self-consistency · Tree of Thought · o1/o3 · DeepSeek-R1 · Test-time compute</li></ul>
+    </li>
+    <li><a href="#sec-rag">Retrieval-Augmented Generation</a>
+      <ul class="sub"><li>Architecture · Embedding models · Vector databases · Chunking · Reranking</li></ul>
+    </li>
+    <li><a href="#sec-multimodal">Multi-Modal Models</a>
+      <ul class="sub"><li>Vision Transformers · CLIP · LLaVA · Visual tokenization</li></ul>
+    </li>
+    <li><a href="#sec-eval">Evaluation & Benchmarks</a>
+      <ul class="sub"><li>Perplexity · BLEU/ROUGE · LLM benchmarks · Contamination · Human eval</li></ul>
+    </li>
+    <li><a href="#sec-frontier">Frontier Concepts</a>
+      <ul class="sub"><li>Distillation · Speculative decoding · Constitutional AI · State-space models</li></ul>
+    </li>
+    <li><a href="#sec-solutions">Complete Exercise Solutions</a>
+      <ul class="sub"><li>All exercises from Parts I, II, and III with detailed solutions</li></ul>
+    </li>
+  </ol>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════════════════════
+     SECTION I — EFFICIENT ATTENTION
+     ═══════════════════════════════════════════════════════════════ -->
+<div class="part-header" id="sec-efficient">
+  <div class="part-label">Advanced Topic I</div>
+  <h2>Efficient Attention & Long Context</h2>
+</div>
+
+<h3>The Quadratic Bottleneck</h3>
+
+<p>Standard self-attention computes an \(n \times n\) attention matrix, where \(n\) is the sequence length. Both memory and computation are \(O(n^2 d)\). For a 128K token context at \(d = 4096\): the attention matrix alone has \(128K^2 = 16.4\) billion entries per head. This is the fundamental scaling challenge.</p>
+
+<h3>Flash Attention — Exact Attention, Hardware-Aware</h3>
+
+<div class="paper-ref">
+  <strong>Dao et al. (2022, 2023)</strong> — "FlashAttention: Fast and Memory-Efficient Exact Attention with IO-Awareness" and "FlashAttention-2." Reformulated attention to be tiling-friendly, reducing memory from \(O(n^2)\) to \(O(n)\) without any approximation.
+</div>
+
+<div class="intuition">
+  GPUs have a hierarchy of memory: HBM (large, slow) and SRAM (small, fast). Standard attention materializes the full \(n \times n\) matrix in HBM, then reads it back for softmax — this memory transfer is the bottleneck, not the arithmetic. Flash Attention computes attention in <em>tiles</em> that fit in SRAM, never materializing the full matrix.
+</div>
+
+<h4>The Key Trick: Online Softmax</h4>
+<p>The challenge is that softmax requires the maximum value across the entire row (for numerical stability) and the sum of all exponentials (for normalization). Flash Attention uses an <strong>online algorithm</strong> that processes blocks incrementally:</p>
+
+<div class="math-block">
+  <span class="label">Online Softmax Accumulation</span>
+  $$m^{(j)} = \max(m^{(j-1)}, \max(\mathbf{S}^{(j)}))$$
+  $$\ell^{(j)} = e^{m^{(j-1)} - m^{(j)}} \ell^{(j-1)} + \text{rowsum}(e^{\mathbf{S}^{(j)} - m^{(j)}})$$
+  $$\mathbf{O}^{(j)} = e^{m^{(j-1)} - m^{(j)}} \mathbf{O}^{(j-1)} + e^{\mathbf{S}^{(j)} - m^{(j)}} \mathbf{V}^{(j)}$$
+</div>
+
+<p>Here \(m\) tracks the running maximum, \(\ell\) tracks the running softmax denominator, and \(\mathbf{O}\) accumulates the unnormalized output. After processing all blocks, the final output is \(\mathbf{O} / \ell\). The key insight: the correction factor \(e^{m^{(j-1)} - m^{(j)}}\) adjusts previous accumulations when a new block reveals a larger maximum.</p>
+
+<p><strong>Result:</strong> 2–4× faster, \(O(n)\) memory instead of \(O(n^2)\), and the answer is <em>mathematically identical</em> to standard attention.</p>
+
+<h3>Sliding Window Attention (Mistral/Gemma-style)</h3>
+
+<p>Instead of attending to all previous tokens, each layer only attends to the most recent \(W\) tokens:</p>
+
+<div class="math-block">
+  $$\text{Attention}(q_t, K, V) = \text{softmax}\!\left(\frac{q_t K_{[t-W:t]}^T}{\sqrt{d_k}}\right) V_{[t-W:t]}$$
+</div>
+
+<p>With \(L\) layers and window size \(W\), the effective receptive field is \(L \times W\) tokens — similar to how stacked CNN layers build large receptive fields from small kernels. Mistral 7B uses \(W = 4096\) with \(L = 32\), giving an effective field of 128K tokens.</p>
+
+<h3>RoPE Context Extension</h3>
+
+<p>Models trained with a maximum sequence length can be extended through RoPE scaling techniques:</p>
+
+<div class="math-block">
+  <span class="label">Position Interpolation (linear scaling)</span>
+  $$\theta'_i = \theta_i / s \quad \text{where } s = \frac{L_{\text{target}}}{L_{\text{trained}}}$$
+</div>
+
+<p><strong>YaRN (Yet another RoPE extensioN)</strong> applies different scaling factors to different frequency bands — high-frequency components (which encode fine-grained position) are scaled more aggressively than low-frequency components (which encode coarse position). This preserves local position information while extending the overall range.</p>
+
+<div class="exercise">
+  <strong>(a)</strong> Standard attention for sequence length 32K with \(d = 128\) per head: how many FLOPs for the \(\mathbf{QK}^T\) multiplication? How many bytes to store the attention matrix in FP16?<br>
+  <strong>(b)</strong> With sliding window attention (\(W = 4096\)), what fraction of the full attention FLOPs do you use?<br>
+  <strong>(c)</strong> Why does Flash Attention not help with the <em>computational</em> cost of attention, only the memory cost?
+</div>
+
+<div class="separator">· · ·</div>
+
+
+<!-- ═══════════════════════════════════════════════════════════════
+     SECTION II — PARAMETER-EFFICIENT FINE-TUNING
+     ═══════════════════════════════════════════════════════════════ -->
+<div class="part-header" id="sec-finetune">
+  <div class="part-label">Advanced Topic II</div>
+  <h2>Parameter-Efficient Fine-Tuning</h2>
+</div>
+
+<h3>The Fine-Tuning Landscape</h3>
+
+<div class="ascii-diagram">
+  Full Fine-Tuning          LoRA                    Prompt Tuning
+  ┌──────────────┐         ┌──────────────┐        ┌──────────────┐
+  │ Update ALL   │         │ Freeze base  │        │ Freeze ALL   │
+  │ parameters   │         │ Add small    │        │ Prepend soft │
+  │              │         │ rank updates │        │ tokens only  │
+  │ 7B params    │         │ ~0.1% params │        │ ~0.001%      │
+  │ ~28GB VRAM   │         │ ~6GB VRAM    │        │ minimal VRAM │
+  └──────────────┘         └──────────────┘        └──────────────┘
+  Best quality              Great tradeoff          Limited capacity
+</div>
+
+<h3>LoRA — Low-Rank Adaptation (Full Derivation)</h3>
+
+<div class="paper-ref">
+  <strong>Hu et al. (2021)</strong> — "LoRA: Low-Rank Adaptation of Large Language Models." Showed that the weight updates during fine-tuning have low intrinsic rank — you can approximate them with tiny low-rank matrices and achieve comparable quality to full fine-tuning.
+</div>
+
+<div class="intuition">
+  During fine-tuning, you're changing a huge matrix \(\mathbf{W}\) to \(\mathbf{W} + \Delta\mathbf{W}\). The key insight is that \(\Delta\mathbf{W}\) typically has low rank — it lives in a small subspace. Instead of storing the full \(\Delta\mathbf{W} \in \mathbb{R}^{d \times d}\), we decompose it into two small matrices.
+</div>
+
+<h4>The Math</h4>
+
+<p>For a weight matrix \(\mathbf{W}_0 \in \mathbb{R}^{d \times k}\), instead of updating to \(\mathbf{W}_0 + \Delta\mathbf{W}\), we parametrize:</p>
+
+<div class="math-block">
+  <span class="label">LoRA Decomposition</span>
+  $$\mathbf{W} = \mathbf{W}_0 + \Delta\mathbf{W} = \mathbf{W}_0 + \mathbf{B}\mathbf{A}$$
+  $$\text{where } \mathbf{B} \in \mathbb{R}^{d \times r}, \; \mathbf{A} \in \mathbb{R}^{r \times k}, \; r \ll \min(d, k)$$
+</div>
+
+<p>The forward pass becomes:</p>
+<div class="math-block">
+  $$\mathbf{h} = \mathbf{W}_0 \mathbf{x} + \frac{\alpha}{r}\mathbf{B}\mathbf{A}\mathbf{x}$$
+</div>
+
+<p>Where \(\alpha\) is a scaling factor (controls the magnitude of the LoRA update relative to the pretrained weights).</p>
+
+<h4>Parameter Savings</h4>
+
+<div class="example">
+  For a model dimension \(d = 4096\), a weight matrix \(\mathbf{W} \in \mathbb{R}^{4096 \times 4096}\):<br><br>
+  <strong>Full fine-tuning:</strong> \(4096 \times 4096 = 16.8M\) parameters per matrix.<br>
+  <strong>LoRA with \(r = 16\):</strong> \(\mathbf{B}: 4096 \times 16 = 65K\) + \(\mathbf{A}: 16 \times 4096 = 65K\) = <strong>131K parameters</strong> per matrix.<br><br>
+  That's \(131K / 16.8M = 0.78\%\) of the original parameters. For all Q, K, V, and output projections across 32 layers: \(131K \times 4 \times 32 = 16.8M\) trainable parameters out of 7B total = <strong>0.24%</strong>.
+</div>
+
+<h4>Initialization</h4>
+<p>\(\mathbf{A}\) is initialized with a random Gaussian, \(\mathbf{B}\) is initialized to zero. This means \(\Delta\mathbf{W} = \mathbf{BA} = 0\) at the start of training — the model begins exactly as the pretrained model, and the LoRA update grows gradually from zero.</p>
+
+<h4>Merging</h4>
+<p>After training, you can merge LoRA weights back into the base model: \(\mathbf{W}_{\text{merged}} = \mathbf{W}_0 + \frac{\alpha}{r}\mathbf{BA}\). The merged model has zero additional inference cost — it's the same size and speed as the original.</p>
+
+<h3>QLoRA — Quantized LoRA</h3>
+
+<div class="paper-ref">
+  <strong>Dettmers et al. (2023)</strong> — "QLoRA: Efficient Finetuning of Quantized Language Models." Fine-tune a 65B model on a single 48GB GPU by combining 4-bit quantization of the base model with LoRA adapters in 16-bit.
+</div>
+
+<p>Three innovations: (1) <strong>4-bit NormalFloat (NF4)</strong> — a quantization type optimal for normally-distributed weights. (2) <strong>Double quantization</strong> — quantize the quantization constants themselves. (3) <strong>Paged optimizers</strong> — use CPU memory to handle GPU memory spikes.</p>
+
+<h3>Other PEFT Methods</h3>
+
+<table>
+  <tr><th>Method</th><th>What's Trainable</th><th>% Params</th><th>Quality</th></tr>
+  <tr><td>Full fine-tuning</td><td>Everything</td><td>100%</td><td>Best (if enough data)</td></tr>
+  <tr><td>LoRA</td><td>Low-rank updates to attention</td><td>0.1–1%</td><td>Near-full quality</td></tr>
+  <tr><td>QLoRA</td><td>Same as LoRA, base in 4-bit</td><td>0.1–1%</td><td>Slightly below LoRA</td></tr>
+  <tr><td>Prefix tuning</td><td>Soft prefix tokens per layer</td><td>&lt;0.1%</td><td>Good for specific tasks</td></tr>
+  <tr><td>Adapters</td><td>Small bottleneck layers inserted</td><td>1–5%</td><td>Good</td></tr>
+  <tr><td>BitFit</td><td>Only bias terms</td><td>&lt;0.1%</td><td>Surprisingly decent</td></tr>
+</table>
+
+<div class="separator">· · ·</div>
+
+
+<!-- ═══════════════════════════════════════════════════════════════
+     SECTION III — QUANTIZATION
+     ═══════════════════════════════════════════════════════════════ -->
+<div class="part-header" id="sec-quant">
+  <div class="part-label">Advanced Topic III</div>
+  <h2>Quantization — Running LLMs on Consumer Hardware</h2>
+</div>
+
+<div class="intuition">
+  A 70B parameter model in FP16 requires 140GB of memory — far more than any consumer GPU. Quantization reduces each parameter from 16 bits to 8, 4, or even 2 bits, shrinking the model proportionally. The question is: how much quality do you lose?
+</div>
+
+<h3>The Math of Quantization</h3>
+
+<p>Linear quantization maps a floating-point value to a discrete integer:</p>
+
+<div class="math-block">
+  <span class="label">Symmetric Quantization</span>
+  $$x_q = \text{round}\!\left(\frac{x}{s}\right), \quad s = \frac{\max(|x|)}{2^{b-1} - 1}$$
+  $$\hat{x} = x_q \cdot s \quad \text{(dequantize for computation)}$$
+</div>
+
+<p>Where \(s\) is the scale factor and \(b\) is the bit-width. For 8-bit: values map to \([-127, 127]\). For 4-bit: values map to \([-7, 7]\).</p>
+
+<h4>Why LLM Weights Tolerate Quantization</h4>
+<p>
+  Neural network weights tend to follow a roughly Gaussian distribution centered near zero, with most values small and rare values large. The large outliers are the problem — they force a wide scale factor \(s\), reducing resolution for the many small values. Modern methods handle this with:
+</p>
+<p>
+  <strong>Per-channel quantization:</strong> separate scale per output channel (row of weight matrix), so one outlier channel doesn't affect others.
+</p>
+<p>
+  <strong>GPTQ (Frantar et al., 2022):</strong> Post-training quantization that iteratively quantizes weights while compensating for the quantization error using second-order (Hessian) information. Quantizes one column at a time, adjusting remaining columns to minimize the output error.
+</p>
+<p>
+  <strong>AWQ (Lin et al., 2023):</strong> Observes that 1% of weights (the salient ones corresponding to important activations) matter much more than the rest. Protects these salient channels with per-channel scaling before quantization.
+</p>
+
+<h4>Memory Savings</h4>
+
+<table>
+  <tr><th>Precision</th><th>Bits/param</th><th>7B Model</th><th>70B Model</th></tr>
+  <tr><td>FP32</td><td>32</td><td>28 GB</td><td>280 GB</td></tr>
+  <tr><td>FP16/BF16</td><td>16</td><td>14 GB</td><td>140 GB</td></tr>
+  <tr><td>INT8</td><td>8</td><td>7 GB</td><td>70 GB</td></tr>
+  <tr><td>INT4 (GPTQ/AWQ)</td><td>4</td><td>3.5 GB</td><td>35 GB</td></tr>
+  <tr><td>2-bit (experimental)</td><td>2</td><td>1.75 GB</td><td>17.5 GB</td></tr>
+</table>
+
+<p>At 4-bit quantization, a 70B model fits on a single A100-80GB with room for KV cache. A 7B model fits on consumer GPUs with 6GB+ VRAM. Quality loss at INT4 is typically 1–3% on benchmarks.</p>
+
+<div class="separator">· · ·</div>
+
+
+<!-- ═══════════════════════════════════════════════════════════════
+     SECTION IV — REASONING MODELS
+     ═══════════════════════════════════════════════════════════════ -->
+<div class="part-header" id="sec-reasoning">
+  <div class="part-label">Advanced Topic IV</div>
+  <h2>Reasoning Models & Chain-of-Thought</h2>
+</div>
+
+<h3>Chain-of-Thought Prompting</h3>
+
+<div class="paper-ref">
+  <strong>Wei et al. (2022)</strong> — "Chain-of-Thought Prompting Elicits Reasoning in Large Language Models." Showed that simply adding "Let's think step by step" or providing step-by-step examples dramatically improves reasoning performance.
+</div>
+
+<div class="intuition">
+  An LLM predicting the answer to "What is 17 × 24?" in a single forward pass must compute the answer in ~100 layer operations. But if it generates intermediate steps ("17 × 20 = 340, 17 × 4 = 68, 340 + 68 = 408"), each step is a much simpler computation, and the answer from each step feeds into the next through the context.
+</div>
+
+<p><strong>Why CoT works mathematically:</strong> Each generated token triggers a full forward pass through the network. Chain-of-thought effectively gives the model \(O(T)\) serial compute steps (where \(T\) is the number of reasoning tokens) instead of just the fixed depth of the network. It transforms a bounded-depth computation into an arbitrarily long sequential one.</p>
+
+<h3>Self-Consistency</h3>
+
+<div class="paper-ref">
+  <strong>Wang et al. (2022)</strong> — "Self-Consistency Improves Chain of Thought Reasoning." Sample multiple reasoning paths and take a majority vote on the final answer. Diverse reasoning paths that converge on the same answer are more likely correct.
+</div>
+
+<div class="math-block">
+  <span class="label">Self-Consistency</span>
+  $$\hat{a} = \arg\max_a \sum_{i=1}^{K} \mathbb{1}[a_i = a]$$
+</div>
+<p>Generate \(K\) different reasoning chains (using temperature sampling), extract the final answer from each, and take the majority vote. This exploits the fact that errors in reasoning tend to be diverse (different chains fail differently), while correct reasoning converges.</p>
+
+<h3>Test-Time Compute Scaling</h3>
+
+<div class="paper-ref">
+  <strong>OpenAI o1/o3 (2024–2025)</strong> and <strong>DeepSeek-R1 (2025)</strong> — Models trained with reinforcement learning to generate extended internal reasoning chains. These models spend more computation at inference time, trading tokens for accuracy.
+</div>
+
+<h4>The Scaling Law of Thought</h4>
+<p>
+  Traditional scaling increases <em>training</em> compute (more parameters, more data). Reasoning models introduce a second axis: <em>inference</em> compute. The longer the model "thinks" (generates internal reasoning tokens), the better it performs on hard problems.
+</p>
+
+<div class="math-block">
+  <span class="label">Test-Time Compute Scaling (empirical)</span>
+  $$\text{Accuracy}(C_{\text{test}}) \approx A - B \cdot C_{\text{test}}^{-\alpha}$$
+</div>
+<p>Where \(C_{\text{test}}\) is the number of inference tokens. Like training scaling laws, performance improves as a power law of compute — but now the compute is spent at inference time.</p>
+
+<h4>DeepSeek-R1: RL for Reasoning</h4>
+<p>
+  DeepSeek-R1 trains the model to produce long chains of thought using reinforcement learning with a simple reward: correctness of the final answer. The model learns to decompose problems, verify intermediate steps, backtrack when stuck, and allocate more tokens to harder sub-problems.
+</p>
+<p>
+  <strong>Key innovation — emergent behaviors:</strong> The model spontaneously learns strategies like self-verification ("let me check this"), exploration of alternatives ("alternatively, I could..."), and reflection ("wait, that doesn't seem right") — all from the simple reward signal of getting the final answer correct. No explicit instruction to reason this way was provided.
+</p>
+
+<h3>Tree of Thought</h3>
+
+<div class="paper-ref">
+  <strong>Yao et al. (2023)</strong> — "Tree of Thoughts." Generalizes chain-of-thought from a single chain to a tree — the model explores multiple reasoning branches, evaluates them, and can backtrack.
+</div>
+
+<div class="ascii-diagram">
+ Chain-of-Thought:         Tree of Thoughts:
+ 
+ Problem                   Problem
+    │                         │
+    ▼                     ┌───┼───┐
+  Step 1                Step 1a  1b  1c
+    │                     │       │
+    ▼                   ┌─┼─┐   ┌─┼─┐
+  Step 2              2a  2b  2c  2d
+    │                  ✗   │    │   ✗
+    ▼                      ▼    ▼
+  Answer                 Ans.  Ans.
+                         (vote)
+</div>
+
+<div class="separator">· · ·</div>
+
+
+<!-- ═══════════════════════════════════════════════════════════════
+     SECTION V — RAG
+     ═══════════════════════════════════════════════════════════════ -->
+<div class="part-header" id="sec-rag">
+  <div class="part-label">Advanced Topic V</div>
+  <h2>Retrieval-Augmented Generation</h2>
+</div>
+
+<div class="paper-ref">
+  <strong>Lewis et al. (2020)</strong> — "Retrieval-Augmented Generation for Knowledge-Intensive NLP Tasks." Combined a retriever (finds relevant documents) with a generator (produces the answer), allowing LLMs to access information beyond their training data.
+</div>
+
+<div class="intuition">
+  An LLM's knowledge is frozen at training time. RAG gives it a "reference library" — before answering, the model retrieves relevant documents and includes them in its context. This reduces hallucinations, enables up-to-date information, and provides citations.
+</div>
+
+<h3>The RAG Pipeline</h3>
+
+<div class="ascii-diagram">
+ ┌─────────┐     ┌────────────┐     ┌──────────────┐     ┌─────────┐
+ │  User    │────→│  Embed     │────→│ Vector       │────→│ Top-k   │
+ │  Query   │     │  query     │     │ similarity   │     │ chunks  │
+ └─────────┘     └────────────┘     │ search       │     └────┬────┘
+                                    └──────────────┘          │
+                                                              ▼
+                                    ┌──────────────┐     ┌─────────┐
+                                    │  LLM         │←────│ Augment │
+                                    │  generates   │     │ prompt  │
+                                    │  answer      │     │ with    │
+                                    └──────────────┘     │ chunks  │
+                                                         └─────────┘
+</div>
+
+<h4>Step 1: Document Processing</h4>
+<p>Split documents into chunks (typically 256–512 tokens with overlap), then embed each chunk using a sentence embedding model:</p>
+<div class="math-block">
+  $$\mathbf{e}_i = f_{\text{embed}}(\text{chunk}_i) \in \mathbb{R}^d$$
+</div>
+<p>Popular embedding models: E5, BGE, Cohere embed-v3, OpenAI text-embedding-3. Store the embedding vectors in a vector database (FAISS, Pinecone, Milvus, Chroma).</p>
+
+<h4>Step 2: Retrieval</h4>
+<p>Embed the user query with the same model, then find the nearest chunks by cosine similarity:</p>
+<div class="math-block">
+  $$\text{score}(q, c_i) = \frac{\mathbf{e}_q^T \mathbf{e}_{c_i}}{\|\mathbf{e}_q\| \|\mathbf{e}_{c_i}\|}$$
+</div>
+<p>Return the top-\(k\) chunks (typically \(k = 3\text{–}10\)).</p>
+
+<h4>Step 3: Augmented Generation</h4>
+<p>Construct a prompt like: <code>[System: Use the following context to answer. Context: {chunk1} {chunk2} ...] [User: {query}]</code></p>
+
+<h4>Advanced RAG Techniques</h4>
+<p><strong>Reranking:</strong> After initial retrieval, use a cross-encoder model (which sees query + document jointly, not just embeddings) to re-score and reorder results. Much more accurate than embedding-only similarity but too slow for the initial search.</p>
+
+<p><strong>Hybrid search:</strong> Combine semantic search (embeddings) with lexical search (BM25/TF-IDF) for better recall. Semantic search finds paraphrases; lexical search catches exact keywords.</p>
+
+<p><strong>Query transformation:</strong> Rewrite the query to improve retrieval — decompose complex questions, expand abbreviations, generate hypothetical answer passages (HyDE).</p>
+
+<div class="separator">· · ·</div>
+
+
+<!-- ═══════════════════════════════════════════════════════════════
+     SECTION VI — MULTI-MODAL
+     ═══════════════════════════════════════════════════════════════ -->
+<div class="part-header" id="sec-multimodal">
+  <div class="part-label">Advanced Topic VI</div>
+  <h2>Multi-Modal Models</h2>
+</div>
+
+<h3>Vision Transformers (ViT)</h3>
+
+<div class="paper-ref">
+  <strong>Dosovitskiy et al. (2020)</strong> — "An Image Is Worth 16x16 Words." Applied the transformer directly to images by splitting them into patches, treating each patch as a "token." Proved that pure transformer architectures match or beat CNNs for vision tasks when trained at sufficient scale.
+</div>
+
+<h4>How ViT Works</h4>
+<div class="math-block">
+  <span class="label">Image → Sequence of Tokens</span>
+  $$\text{Image} \in \mathbb{R}^{H \times W \times C} \longrightarrow \text{Patches} \in \mathbb{R}^{N \times (P^2 \cdot C)} \xrightarrow{\mathbf{W}_{\text{patch}}} \text{Tokens} \in \mathbb{R}^{N \times d}$$
+</div>
+<p>A 224×224 image with 16×16 patches gives \(N = (224/16)^2 = 196\) tokens. Each patch is linearly projected to dimension \(d\), then processed by a standard transformer encoder. Classification uses a special [CLS] token prepended to the sequence.</p>
+
+<h3>CLIP — Connecting Vision and Language</h3>
+
+<div class="paper-ref">
+  <strong>Radford et al. (2021)</strong> — "Learning Transferable Visual Models From Natural Language Supervision." Trained a vision encoder and text encoder jointly on 400M image-text pairs from the internet, creating a shared embedding space where images and text are directly comparable.
+</div>
+
+<h4>Contrastive Learning Objective</h4>
+<div class="math-block">
+  <span class="label">CLIP Loss (for a batch of N image-text pairs)</span>
+  $$\mathcal{L} = -\frac{1}{N}\sum_{i=1}^{N}\left[\log\frac{\exp(\mathbf{v}_i^T\mathbf{t}_i / \tau)}{\sum_{j=1}^{N}\exp(\mathbf{v}_i^T\mathbf{t}_j / \tau)} + \log\frac{\exp(\mathbf{t}_i^T\mathbf{v}_i / \tau)}{\sum_{j=1}^{N}\exp(\mathbf{t}_i^T\mathbf{v}_j / \tau)}\right]$$
+</div>
+<p>Where \(\mathbf{v}_i\) is the image embedding, \(\mathbf{t}_i\) is the text embedding, and \(\tau\) is a learned temperature parameter. The loss maximizes similarity between matched pairs and minimizes similarity between unmatched pairs.</p>
+
+<h3>Vision-Language Models (LLaVA Pattern)</h3>
+
+<p>Modern vision-language models follow a simple recipe:</p>
+
+<div class="ascii-diagram">
+ ┌────────────┐     ┌──────────────┐     ┌──────────────────┐
+ │   Image    │────→│ Vision       │────→│ Projection       │
+ │            │     │ Encoder      │     │ (MLP or linear)  │
+ │            │     │ (ViT/CLIP)   │     │ → visual tokens  │
+ └────────────┘     └──────────────┘     └────────┬─────────┘
+                                                   │
+                                                   ▼
+ ┌────────────┐                          ┌──────────────────┐
+ │   Text     │─────────────────────────→│   LLM Decoder    │
+ │   tokens   │                          │ [visual tokens]  │
+ │            │                          │ [text tokens]    │
+ └────────────┘                          │ → response       │
+                                         └──────────────────┘
+</div>
+
+<p>
+  The vision encoder extracts visual features, a projection layer maps them into the LLM's embedding space as "visual tokens," and the LLM processes both visual and text tokens with its standard self-attention mechanism. From the LLM's perspective, image features look just like text tokens.
+</p>
+
+<div class="separator">· · ·</div>
+
+
+<!-- ═══════════════════════════════════════════════════════════════
+     SECTION VII — EVALUATION
+     ═══════════════════════════════════════════════════════════════ -->
+<div class="part-header" id="sec-eval">
+  <div class="part-label">Advanced Topic VII</div>
+  <h2>Evaluation & Benchmarks</h2>
+</div>
+
+<h3>Perplexity — The Fundamental LM Metric</h3>
+<div class="math-block">
+  <span class="label">Perplexity</span>
+  $$\text{PPL} = \exp\!\left(-\frac{1}{T}\sum_{t=1}^{T}\log P(x_t \mid x_{<t})\right) = \exp(\mathcal{L}_{\text{CE}})$$
+</div>
+<p>
+  Perplexity is the exponential of the average cross-entropy loss. A perplexity of 10 means the model is, on average, as uncertain as if it were choosing uniformly among 10 options at each step. Lower is better. A perfectly confident model would have perplexity 1.
+</p>
+
+<h3>Generation Metrics</h3>
+<table>
+  <tr><th>Metric</th><th>Formula Intuition</th><th>Best For</th></tr>
+  <tr><td>BLEU</td><td>Precision of n-gram overlap with reference</td><td>Machine translation</td></tr>
+  <tr><td>ROUGE-L</td><td>Longest common subsequence with reference</td><td>Summarization</td></tr>
+  <tr><td>BERTScore</td><td>Cosine similarity of BERT embeddings per token</td><td>Semantic similarity</td></tr>
+  <tr><td>METEOR</td><td>Harmonic mean of precision & recall with synonyms</td><td>Translation (improved)</td></tr>
+</table>
+
+<div class="warning">
+  <strong>N-gram metrics are poor evaluators of LLMs.</strong> BLEU and ROUGE only measure surface-level overlap. A paraphrase that perfectly captures the meaning but uses different words scores poorly. Modern LLM evaluation increasingly relies on human evaluation and LLM-as-judge methods (using a stronger model to evaluate a weaker model's outputs).
+</div>
+
+<h3>LLM Benchmarks</h3>
+<table>
+  <tr><th>Benchmark</th><th>What It Tests</th><th>Format</th></tr>
+  <tr><td>MMLU</td><td>Broad knowledge across 57 subjects</td><td>Multiple choice</td></tr>
+  <tr><td>HumanEval / MBPP</td><td>Code generation correctness</td><td>Function completion → unit tests</td></tr>
+  <tr><td>GSM8K</td><td>Grade-school math reasoning</td><td>Word problems → numerical answer</td></tr>
+  <tr><td>MATH</td><td>Competition-level math</td><td>Hard problems → solutions</td></tr>
+  <tr><td>ARC-Challenge</td><td>Science reasoning</td><td>Multiple choice</td></tr>
+  <tr><td>HellaSwag</td><td>Common sense completion</td><td>Choose most plausible continuation</td></tr>
+  <tr><td>TruthfulQA</td><td>Resistance to common misconceptions</td><td>Open-ended generation</td></tr>
+  <tr><td>MT-Bench / Chatbot Arena</td><td>Overall conversational quality</td><td>LLM-as-judge / human preference</td></tr>
+</table>
+
+<div class="deep">
+  <strong>The Benchmark Contamination Problem:</strong> If benchmark data appears in the training corpus, the model has "seen the test." This is increasingly problematic as training datasets grow to encompass most of the internet. Solutions include: dynamic benchmarks that change over time, private held-out test sets, and evaluating on tasks that require reasoning rather than recall.
+</div>
+
+<div class="separator">· · ·</div>
+
+
+<!-- ═══════════════════════════════════════════════════════════════
+     SECTION VIII — FRONTIER CONCEPTS
+     ═══════════════════════════════════════════════════════════════ -->
+<div class="part-header" id="sec-frontier">
+  <div class="part-label">Advanced Topic VIII</div>
+  <h2>Frontier Concepts</h2>
+</div>
+
+<h3>Knowledge Distillation</h3>
+
+<p>Train a smaller "student" model to mimic a larger "teacher" model by matching the teacher's output probability distribution, not just the hard labels:</p>
+
+<div class="math-block">
+  <span class="label">Distillation Loss</span>
+  $$\mathcal{L}_{\text{distill}} = (1-\alpha)\,\mathcal{L}_{\text{CE}}(y, p_S) + \alpha\,T^2 \cdot D_{\text{KL}}(p_T^{(T)} \| p_S^{(T)})$$
+</div>
+<p>Where \(p_T^{(T)}\) and \(p_S^{(T)}\) are the teacher and student distributions at temperature \(T\). Higher temperature makes the distributions softer, revealing more structure (the relative probabilities of wrong answers contain information about similarity between classes).</p>
+
+<h3>Speculative Decoding</h3>
+
+<div class="intuition">
+  LLM inference is memory-bandwidth-bound, not compute-bound — the GPU sits idle while loading weights from memory. Speculative decoding uses a small, fast "draft" model to generate several candidate tokens, then verifies them all at once with the large model. If the draft model is correct (which it often is for easy tokens), you get multiple tokens from one large-model forward pass.
+</div>
+
+<div class="math-block">
+  <span class="label">Acceptance probability</span>
+  $$P(\text{accept}) = \min\!\left(1, \frac{p_{\text{target}}(x)}{p_{\text{draft}}(x)}\right)$$
+</div>
+<p>Tokens where the draft model is more confident than the target model are always accepted. Tokens where it's less confident are accepted with probability equal to the ratio. This guarantees the output distribution is <em>identical</em> to the target model — speculative decoding is an exact optimization, not an approximation.</p>
+
+<h3>State-Space Models (SSMs)</h3>
+
+<div class="paper-ref">
+  <strong>Gu & Dao (2023)</strong> — "Mamba: Linear-Time Sequence Modeling with Selective State Spaces." Proposed a selective state-space model that processes sequences in \(O(n)\) time (vs \(O(n^2)\) for attention) while matching transformer quality on language tasks up to moderate scale.
+</div>
+
+<h4>The SSM Equation</h4>
+<div class="math-block">
+  <span class="label">Continuous State-Space Model</span>
+  $$\mathbf{h}'(t) = \mathbf{A}\mathbf{h}(t) + \mathbf{B}x(t)$$
+  $$y(t) = \mathbf{C}\mathbf{h}(t) + Dx(t)$$
+</div>
+<p>Discretized for sequences (with step size \(\Delta\)): \(\mathbf{h}_t = \bar{\mathbf{A}}\mathbf{h}_{t-1} + \bar{\mathbf{B}}x_t\). This is a linear recurrence — it can be computed either recurrently (\(O(n)\) sequential) or as a convolution (\(O(n \log n)\) parallel).</p>
+
+<p><strong>Mamba's key innovation — selective mechanism:</strong> Making \(\mathbf{B}\), \(\mathbf{C}\), and \(\Delta\) input-dependent (functions of \(x_t\)) allows the model to selectively remember or forget information, similar to LSTM gates but within the SSM framework. This breaks the linearity needed for convolution mode, so Mamba uses a hardware-aware scan algorithm instead.</p>
+
+<h3>Constitutional AI (CAI)</h3>
+
+<div class="paper-ref">
+  <strong>Bai et al. (2022)</strong> — "Constitutional AI: Harmlessness from AI Feedback." Instead of relying entirely on human feedback for alignment, provide the model with a set of principles ("constitution") and use AI-generated feedback: the model critiques its own outputs according to the constitution, then revises them.
+</div>
+
+<p><strong>The RLAIF pipeline:</strong> (1) Generate responses. (2) Ask the model to critique responses against principles. (3) Ask the model to revise responses. (4) Train a preference model on (original, revised) pairs. (5) Use this as the reward model in standard RL training.</p>
+
+<div class="separator">· · ·</div>
+
+
+<!-- ═══════════════════════════════════════════════════════════════
+     SECTION IX — COMPLETE EXERCISE SOLUTIONS
+     ═══════════════════════════════════════════════════════════════ -->
+<div class="part-header" id="sec-solutions">
+  <div class="part-label">Reference</div>
+  <h2>Complete Exercise Solutions</h2>
+</div>
+
+<p><em>Solutions to all exercises from all three parts, in order.</em></p>
+
+<!-- ─── Part I Solutions ─── -->
+<h3>Part I — Mathematical Foundations</h3>
+
+<h4>§1.1 Linear Algebra</h4>
+<div class="solution">
+  <strong>(a)</strong> \(\mathbf{w}^T\mathbf{x}_1 = 0.5(4) + (-1.0)(2) = 2.0 - 2.0 = 0.0\)<br>
+  \(\mathbf{w}^T\mathbf{x}_2 = 0.5(1) + (-1.0)(5) = 0.5 - 5.0 = -4.5\)<br>
+  The weight vector "prefers" \(\mathbf{x}_1\) (score 0.0 vs -4.5) — or more precisely, \(\mathbf{x}_1\) is less negatively aligned with \(\mathbf{w}\). In a classifier context, \(\mathbf{x}_1\) is closer to the positive side of the decision boundary.<br><br>
+  
+  <strong>(b)</strong> \(\mathbf{x}_1 \cdot \mathbf{x}_2 = 4(1) + 2(5) = 14\)<br>
+  \(\|\mathbf{x}_1\| = \sqrt{16 + 4} = \sqrt{20} \approx 4.47\)<br>
+  \(\|\mathbf{x}_2\| = \sqrt{1 + 25} = \sqrt{26} \approx 5.10\)<br>
+  \(\cos\theta = 14 / (4.47 \times 5.10) \approx 14 / 22.8 \approx 0.614\)<br>
+  Moderately similar — the angle between them is about 52°.
+</div>
+
+<h4>§1.3 Optimization</h4>
+<div class="solution">
+  <strong>(a)</strong> \(f(\theta) = (\theta - 3)^2\), so \(\nabla f = 2(\theta - 3)\).<br>
+  Step 0: \(\theta_0 = 0\), gradient = \(2(0-3) = -6\), update: \(\theta_1 = 0 - 0.1(-6) = 0.6\)<br>
+  Step 1: \(\theta_1 = 0.6\), gradient = \(2(0.6-3) = -4.8\), update: \(\theta_2 = 0.6 + 0.48 = 1.08\)<br>
+  Step 2: \(\theta_2 = 1.08\), gradient = \(2(1.08-3) = -3.84\), update: \(\theta_3 = 1.08 + 0.384 = 1.464\)<br>
+  Moving toward the minimum at \(\theta = 3\), but slowly with \(\eta = 0.1\).<br><br>
+  
+  <strong>(b)</strong> \(y = \sigma(wx + b)\). Let \(z = wx + b\).<br>
+  \(\frac{\partial y}{\partial w} = \frac{\partial y}{\partial z} \cdot \frac{\partial z}{\partial w} = \sigma(z)(1 - \sigma(z)) \cdot x\)<br>
+  Or substituting: \(\frac{\partial y}{\partial w} = y(1-y) \cdot x\).
+</div>
+
+<!-- ─── Part I: Core ML Solutions ─── -->
+<h3>Part I — Core Machine Learning</h3>
+
+<h4>§2.2 Logistic Regression</h4>
+<div class="solution">
+  <strong>(a)</strong> \(z = w_{\text{free}} x_{\text{free}} + w_{\text{meeting}} x_{\text{meeting}} + b\)<br>
+  \(z = 2.0(1) + (-1.5)(1) + (-0.5) = 2.0 - 1.5 - 0.5 = 0.0\)<br>
+  \(P(\text{spam}) = \sigma(0.0) = 0.5\).<br>
+  The model is perfectly uncertain — the positive signal from "free" is exactly cancelled by "meeting" and the bias.<br><br>
+  
+  <strong>(b)</strong> With \(y = 1\) and \(\hat{p} = 0.5\):<br>
+  \(\mathcal{L} = -[1 \cdot \log(0.5) + 0 \cdot \log(0.5)] = -\log(0.5) = \ln 2 \approx 0.693\)<br>
+  This is the maximum possible loss for a single example — the model is at maximum uncertainty.<br><br>
+  
+  <strong>(c)</strong> \(\frac{\partial \mathcal{L}}{\partial w_{\text{free}}} = (\hat{p} - y) \cdot x_{\text{free}} = (0.5 - 1)(1) = -0.5\)<br>
+  Update: \(w_{\text{free}}' = 2.0 - 0.1(-0.5) = 2.0 + 0.05 = 2.05\)<br>
+  The weight for "free" increases, making the model slightly more inclined to classify emails with "free" as spam.
+</div>
+
+<!-- ─── Part I: Neural Network Solutions ─── -->
+<h3>Part I — Neural Networks</h3>
+
+<h4>§3.3 Backpropagation</h4>
+<div class="solution">
+  From the forward pass: \(a^{[2]} = 0.59\), \(y = 1\), \(\mathbf{a}^{[1]} = [0.25, 0.40]^T\), \(\mathbf{x} = [1, 0.5]^T\).<br>
+  \(\mathbf{W}^{[2]} = [0.5, 0.6]\).<br><br>
+  
+  <strong>(a)</strong> \(\delta^{[2]} = 0.59 - 1 = -0.41\)<br><br>
+  
+  <strong>(b)</strong> \(\frac{\partial \mathcal{L}}{\partial \mathbf{W}^{[2]}} = \delta^{[2]} \cdot (\mathbf{a}^{[1]})^T = -0.41 \times [0.25, 0.40] = [-0.1025, -0.164]\)<br><br>
+  
+  <strong>(c)</strong> \(\boldsymbol{\delta}^{[1]} = (\mathbf{W}^{[2]})^T \delta^{[2]} \odot \text{ReLU}'(\mathbf{z}^{[1]})\)<br>
+  \(= \begin{bmatrix}0.5\\0.6\end{bmatrix} \times (-0.41) \odot \begin{bmatrix}1\\1\end{bmatrix} = \begin{bmatrix}-0.205\\-0.246\end{bmatrix}\)<br><br>
+  
+  <strong>(d)</strong> With \(\eta = 0.1\):<br>
+  \(W_1^{[2]}: 0.5 - 0.1(-0.1025) = 0.5103\)<br>
+  \(W_2^{[2]}: 0.6 - 0.1(-0.164) = 0.6164\)<br>
+  \(W_{11}^{[1]}: 0.1 - 0.1(-0.205)(1) = 0.1205\)<br>
+  \(W_{12}^{[1]}: 0.3 - 0.1(-0.205)(0.5) = 0.3103\)<br>
+  \(W_{21}^{[1]}: 0.2 - 0.1(-0.246)(1) = 0.2246\)<br>
+  \(W_{22}^{[1]}: 0.4 - 0.1(-0.246)(0.5) = 0.4123\)<br>
+  All weights increase (since \(\delta < 0\) means the model under-predicted), pushing the output closer to 1.
+</div>
+
+<!-- ─── Part I: Architecture Solutions ─── -->
+<h3>Part I — Deep Learning Architectures</h3>
+
+<h4>§4.2 RNNs & LSTMs</h4>
+<div class="solution">
+  <strong>(a)</strong> If forget gate \(\mathbf{f}_t = \mathbf{1}\) and input gate \(\mathbf{i}_t = \mathbf{0}\):<br>
+  \(\mathbf{c}_t = \mathbf{1} \odot \mathbf{c}_{t-1} + \mathbf{0} \odot \tilde{\mathbf{c}}_t = \mathbf{c}_{t-1}\)<br>
+  The cell state is perfectly preserved — nothing is forgotten, nothing new is added. This is the "information highway" mode.<br><br>
+  
+  Reverse (\(\mathbf{f}_t = \mathbf{0}\), \(\mathbf{i}_t = \mathbf{1}\)):<br>
+  \(\mathbf{c}_t = \mathbf{0} \odot \mathbf{c}_{t-1} + \mathbf{1} \odot \tilde{\mathbf{c}}_t = \tilde{\mathbf{c}}_t\)<br>
+  Previous memory is completely erased and replaced with the new candidate. This is a "reset" mode.<br><br>
+  
+  <strong>(b)</strong> An additive update means \(\frac{\partial \mathbf{c}_t}{\partial \mathbf{c}_{t-1}} = \mathbf{f}_t\) (just the forget gate, an element-wise scaling). If \(\mathbf{f}_t \approx 1\), the gradient flows through unchanged — no vanishing!<br>
+  A multiplicative update like \(\mathbf{c}_t = \mathbf{f}_t \odot \mathbf{c}_{t-1} \odot \tilde{\mathbf{c}}_t\) would make the gradient a product of many terms, leading to vanishing/exploding. The additive structure is the key insight.
+</div>
+
+<!-- ─── Part I: NLP Solutions ─── -->
+<h3>Part I — NLP Foundations</h3>
+
+<h4>§5.1 Word Embeddings</h4>
+<div class="solution">
+  <strong>(a)</strong> The equation \(\vec{\text{king}} - \vec{\text{man}} + \vec{\text{woman}} \approx \vec{\text{queen}}\) implies that semantic relationships are encoded as <em>linear directions</em> in the embedding space. Specifically:<br>
+  \(\vec{\text{king}} - \vec{\text{queen}} \approx \vec{\text{man}} - \vec{\text{woman}}\)<br>
+  This means there exists a "gender direction" that is approximately consistent across different word pairs. Individual dimensions don't correspond to single concepts — rather, <em>directions</em> (linear combinations of dimensions) encode semantic attributes like gender, royalty, plurality, tense, etc.<br><br>
+  
+  <strong>(b)</strong> Using the same matrix for center and context embeddings would force \(\mathbf{v}_w^T \mathbf{v}_w\) (the self-similarity) to always be the squared norm — it can't be negative. This means the model can't learn that a word is a poor predictor of itself as context (which is usually the case — "the" rarely predicts another "the" nearby). Two separate matrices give more flexibility: the center and context roles are genuinely different, and having separate embeddings lets the model capture these different roles.
+</div>
+
+<!-- ─── Part I: Transformer Solutions ─── -->
+<h3>Part I — Attention & Transformers</h3>
+
+<h4>§6.4 Transformer Architecture</h4>
+<div class="solution">
+  <strong>(a)</strong> With \(d = 256\) and \(h = 4\) heads: \(d_k = d_v = d/h = 64\).<br>
+  Each \(\mathbf{W}_i^Q, \mathbf{W}_i^K, \mathbf{W}_i^V \in \mathbb{R}^{256 \times 64}\).<br><br>
+  
+  <strong>(b)</strong> Causal mask for sequence length 4:<br>
+  \(\mathbf{M} = \begin{bmatrix}0 & -\infty & -\infty & -\infty\\0 & 0 & -\infty & -\infty\\0 & 0 & 0 & -\infty\\0 & 0 & 0 & 0\end{bmatrix}\)<br>
+  After softmax, row \(i\) of the attention matrix is a probability distribution over positions \(0, 1, \ldots, i\). Each row represents: "given that I'm at position \(i\), how much should I attend to each past position (including myself)?"<br><br>
+  
+  <strong>(c)</strong> Residual connections let the gradient flow directly through the identity path: \(\frac{\partial (\mathbf{x} + f(\mathbf{x}))}{\partial \mathbf{x}} = \mathbf{I} + \frac{\partial f}{\partial \mathbf{x}}\). Even if \(\frac{\partial f}{\partial \mathbf{x}}\) is small (vanishing), the identity term \(\mathbf{I}\) guarantees a gradient of at least 1. Without residual connections, a 96-layer transformer would be untrainable due to vanishing gradients; with them, gradients can skip directly from the loss to any layer.
+</div>
+
+<!-- ─── Part I: LLM Solutions ─── -->
+<h3>Part I — Modern LLMs</h3>
+
+<h4>§7.4–7.5 MoE and RLHF</h4>
+<div class="solution">
+  <strong>(a)</strong> With 64 experts and top-2 routing: \(2/64 = 3.125\%\) of parameters active per token. This is beneficial because: (1) Training: total model capacity is huge (enabling more knowledge storage), but each gradient update is cheap (only updating 2 experts + shared components). (2) Inference: each forward pass only needs to load and compute 2 experts' worth of weights, dramatically reducing latency and memory bandwidth requirements.<br><br>
+  
+  <strong>(b)</strong> If \(\beta \to 0\): the KL constraint vanishes. The model optimizes reward without restriction, likely leading to "reward hacking" — finding degenerate outputs that score high on the imperfect reward model but are nonsensical or harmful.<br>
+  If \(\beta \to \infty\): the KL term dominates. The model is forced to stay extremely close to the reference policy and barely changes. Alignment has almost no effect.<br>
+  Good values of \(\beta\) balance these extremes.<br><br>
+  
+  <strong>(c)</strong> A model trained only on next-token prediction learns to <em>predict</em> what text looks like on the internet — including toxic, biased, unhelpful, or harmful text. If asked "How do I hotwire a car?", the pretrained model predicts the most likely continuation, which is a direct answer. RLHF teaches the model that the <em>preferred</em> response is to decline or redirect. More generally, RLHF shifts the model from "what would the internet say?" to "what would a helpful, harmless, honest assistant say?"
+</div>
+
+<!-- ─── Part III Exercise Solutions ─── -->
+<h3>Part III — Advanced Topics</h3>
+
+<h4>§I Efficient Attention</h4>
+<div class="solution">
+  <strong>(a)</strong> \(\mathbf{QK}^T\) for sequence length \(n = 32768\), \(d_k = 128\):<br>
+  FLOPs: \(2 \times n \times n \times d_k = 2 \times 32768^2 \times 128 \approx 2.75 \times 10^{11}\) FLOPs per head.<br>
+  Memory for attention matrix in FP16: \(n^2 \times 2\) bytes = \(32768^2 \times 2 = 2.15\) GB per head. With 32 heads, that's ~69 GB just for attention matrices — clearly the bottleneck.<br><br>
+  
+  <strong>(b)</strong> Sliding window (\(W = 4096\)): each token only attends to \(W\) tokens instead of \(n\).<br>
+  FLOPs ratio: \(W/n = 4096/32768 = 12.5\%\) of the full attention cost.<br><br>
+  
+  <strong>(c)</strong> Flash Attention computes the <em>exact same</em> \(\mathbf{QK}^T\) and \(\text{softmax}(...)\mathbf{V}\) — it doesn't reduce the number of arithmetic operations. It reduces <em>memory IO</em>: by tiling the computation to fit in fast SRAM, it avoids the expensive round-trip of writing the \(n \times n\) attention matrix to slow HBM and reading it back. The speedup comes entirely from better memory access patterns, not fewer FLOPs. (In practice, modern GPUs are memory-bandwidth-bound for attention, so reducing IO is more impactful than reducing FLOPs.)
+</div>
+
+<h4>§IV LLM Training Pipeline</h4>
+<div class="solution">
+  <strong>(a)</strong> \(\text{Parameters} \approx 12 \times L \times d^2 = 12 \times 32 \times 4096^2 = 12 \times 32 \times 16.78M = 6.44B\).<br>
+  LLaMA-7B has ~6.7B parameters. Our estimate of 6.44B is very close — the \(12Ld^2\) formula accounts for: 4 attention projections (\(Q, K, V, O\) each \(d \times d\)), 2 FFN projections (\(d \times 4d\) and \(4d \times d\)), plus biases and layer norms (small). The slight undercount is because the formula ignores the embedding layer (\(V \times d\) where \(V\) is vocab size).<br><br>
+  
+  <strong>(b)</strong> Gradient updates = total tokens / batch size = \(2 \times 10^{12} / (4 \times 10^6) = 500{,}000\) steps.<br>
+  At typical training throughput, this might take 20–30 days on a 1024-GPU cluster.<br><br>
+  
+  <strong>(c)</strong> BF16 has 8 exponent bits (same as FP32) but only 7 mantissa bits (vs 23 for FP32 and 10 for FP16). FP16 has only 5 exponent bits, giving a range of \([6 \times 10^{-8}, 65504]\). Gradients often exceed 65504 (overflow → NaN) or fall below \(6 \times 10^{-8}\) (underflow → 0). BF16's range is \([10^{-38}, 3.4 \times 10^{38}]\), matching FP32. You lose some precision, but precision matters less than range for gradient accumulation.
+</div>
+
+
+<div class="separator">· · ·</div>
+
+<div style="text-align:center; padding: 3rem 0 1rem; color: var(--text-secondary); font-family: 'Source Sans 3', sans-serif;">
+  <h3 style="border:none; color: var(--accent-dark); font-size: 1.3rem;">What's Next?</h3>
+</div>
+
+<p>You now have a complete mathematical and conceptual foundation spanning from dot products to frontier LLM architectures. The path forward is hands-on:</p>
+
+<p><strong>1. Implement.</strong> Build a transformer from scratch in PyTorch. Karpathy's nanoGPT and minbpe are the gold standard starting points. The gap between understanding the math and writing the code is where real understanding forms.</p>
+
+<p><strong>2. Read papers.</strong> Start with the annotated reading list from Part I. With the mathematical foundation from these three volumes, you should be able to follow the key equations in any modern NLP paper. When you encounter unfamiliar notation, map it back to the concepts here.</p>
+
+<p><strong>3. Experiment.</strong> Fine-tune an open-weight model (Qwen, LLaMA, Mistral) with LoRA on a task you care about. Set up a RAG pipeline. Run ablations — change one thing at a time and observe the effect. The intuition you build from experimentation is irreplaceable.</p>
+
+<p><strong>4. Stay current.</strong> Follow ArXiv (cs.CL, cs.LG), read ML Twitter/X threads, watch conference talks (NeurIPS, ICML, ACL, EMNLP). The field moves fast, but with solid foundations, new papers become incremental extensions of what you already know.</p>
+
+<div style="text-align:center; padding: 2rem 0; color: var(--text-secondary); font-family: 'Source Sans 3', sans-serif; font-size: 0.9rem;">
+  <em>"The only way to learn mathematics is to do mathematics." — Paul Halmos</em><br><br>
+  <em>The same is true for machine learning. The equations in these pages are not the destination — they're the map. The territory is in the code, the experiments, and the papers.</em>
+</div>
+
+</div><!-- .container -->
+
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+  renderMathInElement(document.body, {
+    delimiters: [
+      {left: "$$", right: "$$", display: true},
+      {left: "\\(", right: "\\)", display: false}
+    ],
+    throwOnError: false
+  });
+});
+</script>
+</body>
+</html>

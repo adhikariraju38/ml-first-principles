@@ -1,0 +1,915 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ML First Principles — Part IV: PyTorch Implementation Cookbook</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Crimson+Pro:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400;1,500&family=JetBrains+Mono:wght@400;500&family=Source+Sans+3:wght@300;400;500;600;700&display=swap');
+  :root{--bg:#faf8f5;--bg-alt:#f0ece6;--bg-code:#1e1e2e;--text:#1a1a1a;--text-secondary:#555;--accent:#c45d2e;--accent-dark:#9a3f1a;--border:#d4cfc7;--math-bg:#fdfcfa;--exercise-bg:#eef4e8;--exercise-border:#6b8e4e;--paper-bg:#f5f0e8;--paper-border:#c4a97d;--insight-bg:#e8eef5;--insight-border:#4a6fa5;--impl-bg:#f0f5f0;--impl-border:#3a7a5a;--deep-bg:#f5f0f8;--deep-border:#7a5ca5;--warning-bg:#fdf0e0;--warning-border:#d4940a}
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{font-family:'Crimson Pro',Georgia,serif;font-size:19px;line-height:1.72;color:var(--text);background:var(--bg);-webkit-font-smoothing:antialiased}
+  .container{max-width:820px;margin:0 auto;padding:3rem 2rem 6rem}
+  .hero{text-align:center;padding:4rem 0 3rem;border-bottom:3px double var(--border);margin-bottom:3rem}
+  .hero h1{font-family:'Crimson Pro',serif;font-weight:700;font-size:2.4rem;line-height:1.2;color:var(--accent-dark);letter-spacing:-0.02em;margin-bottom:0.5rem}
+  .hero .subtitle{font-family:'Source Sans 3',sans-serif;font-weight:300;font-size:1.05rem;color:var(--text-secondary);letter-spacing:0.04em;text-transform:uppercase}
+  .toc{background:var(--bg-alt);border:1px solid var(--border);border-radius:4px;padding:2rem 2.5rem;margin-bottom:3rem}
+  .toc h2{font-family:'Source Sans 3',sans-serif;font-weight:700;font-size:1rem;text-transform:uppercase;letter-spacing:0.12em;color:var(--accent);margin-bottom:1rem}
+  .toc ol{list-style:none;counter-reset:toc-counter}
+  .toc>ol>li{counter-increment:toc-counter;margin-bottom:0.3rem}
+  .toc>ol>li::before{content:counter(toc-counter) ". ";font-weight:600;color:var(--accent)}
+  .toc a{color:var(--text);text-decoration:none;font-size:1rem;font-family:'Source Sans 3',sans-serif}
+  .toc .sub{padding-left:2rem;margin-top:0.2rem}.toc .sub li{font-size:0.92rem;color:var(--text-secondary);margin-bottom:0.15rem}
+  .part-header{text-align:center;padding:3rem 0 1.5rem;margin:4rem 0 2rem;border-top:3px double var(--border)}
+  .part-header .part-label{font-family:'Source Sans 3',sans-serif;font-weight:700;text-transform:uppercase;letter-spacing:0.2em;font-size:0.8rem;color:var(--accent)}
+  .part-header h2{font-family:'Crimson Pro',serif;font-weight:700;font-size:2rem;color:var(--accent-dark);margin-top:0.3rem}
+  h3{font-family:'Crimson Pro',serif;font-weight:600;font-size:1.5rem;color:var(--accent-dark);margin:3rem 0 1rem;padding-bottom:0.3rem;border-bottom:1px solid var(--border)}
+  h4{font-family:'Source Sans 3',sans-serif;font-weight:600;font-size:1.05rem;color:var(--text);margin:2rem 0 0.7rem;text-transform:uppercase;letter-spacing:0.06em}
+  h5{font-family:'Source Sans 3',sans-serif;font-weight:600;font-size:0.95rem;color:var(--accent);margin:1.5rem 0 0.5rem}
+  p{margin-bottom:1rem}strong{font-weight:600}em{font-style:italic}
+  .math-block{background:var(--math-bg);border-left:3px solid var(--accent);padding:1.2rem 1.5rem;margin:1.5rem 0;overflow-x:auto;border-radius:0 4px 4px 0}
+  .math-block .label{font-family:'Source Sans 3',sans-serif;font-size:0.78rem;font-weight:600;text-transform:uppercase;letter-spacing:0.1em;color:var(--accent);display:block;margin-bottom:0.5rem}
+  .intuition{background:var(--insight-bg);border-left:3px solid var(--insight-border);padding:1.2rem 1.5rem;margin:1.5rem 0;border-radius:0 4px 4px 0}
+  .intuition::before{content:"💡 Intuition";font-family:'Source Sans 3',sans-serif;font-size:0.78rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--insight-border);display:block;margin-bottom:0.5rem}
+  .impl{background:var(--impl-bg);border-left:3px solid var(--impl-border);padding:1.2rem 1.5rem;margin:1.5rem 0;border-radius:0 4px 4px 0}
+  .impl::before{content:"🔧 Implementation Note";font-family:'Source Sans 3',sans-serif;font-size:0.78rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--impl-border);display:block;margin-bottom:0.5rem}
+  .deep{background:var(--deep-bg);border-left:3px solid var(--deep-border);padding:1.2rem 1.5rem;margin:1.5rem 0;border-radius:0 4px 4px 0}
+  .deep::before{content:"🔬 Under the Hood";font-family:'Source Sans 3',sans-serif;font-size:0.78rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--deep-border);display:block;margin-bottom:0.5rem}
+  .warning{background:var(--warning-bg);border-left:3px solid var(--warning-border);padding:1.2rem 1.5rem;margin:1.5rem 0;border-radius:0 4px 4px 0}
+  .warning::before{content:"⚠️ Gotcha";font-family:'Source Sans 3',sans-serif;font-size:0.78rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--warning-border);display:block;margin-bottom:0.5rem}
+  .exercise{background:var(--exercise-bg);border-left:3px solid var(--exercise-border);padding:1.2rem 1.5rem;margin:1.5rem 0;border-radius:0 4px 4px 0}
+  .exercise::before{content:"🛠️ Build Challenge";font-family:'Source Sans 3',sans-serif;font-size:0.78rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--exercise-border);display:block;margin-bottom:0.5rem}
+  code{font-family:'JetBrains Mono',monospace;font-size:0.85em;background:var(--bg-alt);padding:0.15em 0.4em;border-radius:3px}
+  pre{background:var(--bg-code);color:#cdd6f4;padding:1.2rem 1.5rem;border-radius:4px;overflow-x:auto;margin:1.5rem 0;font-family:'JetBrains Mono',monospace;font-size:0.8rem;line-height:1.55}
+  pre .c{color:#6c7086}pre .k{color:#cba6f7}pre .s{color:#a6e3a1}pre .n{color:#fab387}pre .f{color:#89b4fa}pre .v{color:#f5c2e7}pre .d{color:#89dceb}
+  table{width:100%;border-collapse:collapse;margin:1.5rem 0;font-size:0.95rem}
+  th,td{padding:0.6rem 1rem;text-align:left;border-bottom:1px solid var(--border)}
+  th{font-family:'Source Sans 3',sans-serif;font-weight:600;font-size:0.82rem;text-transform:uppercase;letter-spacing:0.08em;color:var(--accent-dark);border-bottom:2px solid var(--accent)}
+  .separator{text-align:center;margin:3rem 0;color:var(--border);letter-spacing:0.5em}
+  .ascii-diagram{background:var(--bg-alt);border:1px solid var(--border);padding:1.5rem;margin:1.5rem 0;border-radius:4px;font-family:'JetBrains Mono',monospace;font-size:0.75rem;line-height:1.4;white-space:pre;overflow-x:auto}
+  .katex-display{margin:0.8rem 0!important}.katex{font-size:1.05em}
+  @media(max-width:700px){.container{padding:1.5rem 1rem 4rem}.hero h1{font-size:1.8rem}body{font-size:17px}pre{font-size:0.72rem}}
+</style>
+</head>
+<body>
+<style>
+.course-nav{position:sticky;top:0;z-index:1000;background:#1a1a2e;padding:10px 20px;display:flex;justify-content:space-between;align-items:center;font-family:'Source Sans 3',sans-serif;font-size:0.9rem;box-shadow:0 2px 8px rgba(0,0,0,0.15)}
+.course-nav a{color:#ccc;text-decoration:none;transition:color 0.2s}
+.course-nav a:hover{color:#fff}
+.course-nav .nav-home{font-weight:600;color:#fff}
+.course-nav .nav-prev,.course-nav .nav-next{min-width:120px}
+.course-nav .nav-next{text-align:right}
+</style>
+<nav class="course-nav">
+<div class="nav-prev"><a href="ml-advanced-topics-and-solutions.html">&larr; Part III: Advanced Topics</a></div>
+<div><a href="index.html" class="nav-home">ML First Principles</a></div>
+<div class="nav-next"><a href="ml-part5-theory.html">Part V: Theory &rarr;</a></div>
+</nav>
+<div class="container">
+
+<div class="hero">
+  <div class="subtitle">Part IV — Code That Teaches</div>
+  <h1>PyTorch Implementation Cookbook</h1>
+  <p style="margin-top:1rem;color:var(--text-secondary);font-size:0.95rem;">
+    Complete, annotated, runnable implementations of every major architecture.<br>
+    Each connects directly to the math from Parts I–III.
+  </p>
+</div>
+
+<div class="toc">
+  <h2>Implementations</h2>
+  <ol>
+    <li><a href="#s1">PyTorch Fundamentals — Tensors, Autograd, Modules</a></li>
+    <li><a href="#s2">Linear & Logistic Regression</a></li>
+    <li><a href="#s3">Multi-Layer Perceptron with Custom Backprop</a></li>
+    <li><a href="#s4">CNN for Image Classification</a></li>
+    <li><a href="#s5">RNN & LSTM Language Model</a></li>
+    <li><a href="#s6">Word2Vec (Skip-Gram with Negative Sampling)</a></li>
+    <li><a href="#s7">Self-Attention & Multi-Head Attention</a></li>
+    <li><a href="#s8">Complete GPT from Scratch (~200 lines)</a></li>
+    <li><a href="#s9">Training Loop, Evaluation & Generation</a></li>
+    <li><a href="#s10">LoRA Fine-Tuning</a></li>
+  </ol>
+</div>
+
+
+<!-- ═══════════════════════ 1 ═══════════════════════ -->
+<div class="part-header" id="s1">
+  <div class="part-label">Implementation 1</div>
+  <h2>PyTorch Fundamentals</h2>
+</div>
+
+<h3>Tensors — The Atoms of Deep Learning</h3>
+
+<pre><span class="k">import</span> torch
+
+<span class="c"># ── Creating tensors ──</span>
+x = torch.tensor([1.0, 2.0, 3.0])                  <span class="c"># from list</span>
+X = torch.randn(3, 4)                               <span class="c"># random normal (3×4)</span>
+W = torch.zeros(4, 2)                               <span class="c"># zeros (4×2)</span>
+I = torch.eye(3)                                    <span class="c"># identity matrix</span>
+
+<span class="c"># ── Key operations (map to Part I math) ──</span>
+dot = torch.dot(x, x)                               <span class="c"># dot product: x·x</span>
+matmul = X @ W                                      <span class="c"># matrix multiply: (3×4)(4×2) → (3×2)</span>
+norm = torch.norm(x)                                <span class="c"># L2 norm: ||x||</span>
+cosine = torch.nn.functional.cosine_similarity(
+    X[0:1], X[1:2])                                 <span class="c"># cosine similarity</span>
+
+<span class="c"># ── Broadcasting: scalar ops apply element-wise ──</span>
+scaled = X * 2.0 + 1.0                              <span class="c"># every element: 2x + 1</span>
+
+<span class="c"># ── Reshaping ──</span>
+flat = X.view(-1)                                   <span class="c"># flatten to 1D (12 elements)</span>
+batch = X.unsqueeze(0)                              <span class="c"># add batch dim: (3,4) → (1,3,4)</span>
+
+<span class="c"># ── Device management ──</span>
+device = torch.device(<span class="s">"cuda"</span> <span class="k">if</span> torch.cuda.is_available() <span class="k">else</span> <span class="s">"cpu"</span>)
+X = X.to(device)                                    <span class="c"># move to GPU</span></pre>
+
+<h3>Autograd — Automatic Differentiation</h3>
+
+<div class="intuition">
+  PyTorch builds a computational graph as you perform operations. When you call <code>.backward()</code>, it traverses this graph in reverse (backpropagation), computing gradients via the chain rule. You never write gradient code manually.
+</div>
+
+<pre><span class="c"># ── Autograd tracks operations on tensors with requires_grad=True ──</span>
+w = torch.tensor([2.0, -1.0], requires_grad=<span class="k">True</span>)
+x = torch.tensor([3.0, 4.0])
+y_true = torch.tensor(1.0)
+
+<span class="c"># Forward pass</span>
+z = torch.dot(w, x)                  <span class="c"># z = 2(3) + (-1)(4) = 2</span>
+y_hat = torch.sigmoid(z)             <span class="c"># σ(2) ≈ 0.8808</span>
+loss = -y_true * torch.log(y_hat) - (1 - y_true) * torch.log(1 - y_hat)
+
+<span class="c"># Backward pass — computes all gradients automatically!</span>
+loss.backward()
+
+print(w.grad)  <span class="c"># ∂L/∂w — the gradient we derived by hand in Part I</span>
+<span class="c"># tensor([-0.3574, -0.4765])   ← (ŷ - y) * x = (0.881-1)*[3,4]</span>
+
+<span class="c"># ── CRITICAL: zero gradients before next backward pass ──</span>
+w.grad.zero_()</pre>
+
+<div class="deep">
+  <strong>What <code>.backward()</code> actually does:</strong> It walks the computational graph (stored as a DAG of <code>Function</code> nodes), calling each operation's <code>.backward()</code> method which implements the local derivative. For sigmoid: the <code>SigmoidBackward</code> node computes \(\sigma(z)(1-\sigma(z)) \times \text{incoming gradient}\). For matrix multiply: <code>MmBackward</code> computes \(\mathbf{X}^T \delta\) and \(\delta \mathbf{W}^T\). This is exactly the chain rule from Part I §1.3.
+</div>
+
+<h3>nn.Module — Building Blocks</h3>
+
+<pre><span class="k">import</span> torch.nn <span class="k">as</span> nn
+
+<span class="k">class</span> <span class="f">TwoLayerNet</span>(nn.Module):
+    <span class="k">def</span> <span class="f">__init__</span>(self, d_in, d_hidden, d_out):
+        <span class="k">super</span>().__init__()
+        self.layer1 = nn.Linear(d_in, d_hidden)     <span class="c"># W₁x + b₁</span>
+        self.relu = nn.ReLU()                        <span class="c"># activation</span>
+        self.layer2 = nn.Linear(d_hidden, d_out)     <span class="c"># W₂h + b₂</span>
+
+    <span class="k">def</span> <span class="f">forward</span>(self, x):
+        h = self.relu(self.layer1(x))                <span class="c"># a⁽¹⁾ = ReLU(W₁x + b₁)</span>
+        <span class="k">return</span> self.layer2(h)                       <span class="c"># z⁽²⁾ = W₂a⁽¹⁾ + b₂</span>
+
+model = TwoLayerNet(784, 128, 10)
+print(<span class="s">f"Parameters: {sum(p.numel() for p in model.parameters()):,}"</span>)
+<span class="c"># 784*128 + 128 + 128*10 + 10 = 101,770</span></pre>
+
+<div class="separator">· · ·</div>
+
+
+<!-- ═══════════════════════ 2 ═══════════════════════ -->
+<div class="part-header" id="s2">
+  <div class="part-label">Implementation 2</div>
+  <h2>Linear & Logistic Regression</h2>
+</div>
+
+<pre><span class="k">import</span> torch
+<span class="k">import</span> torch.nn <span class="k">as</span> nn
+<span class="k">from</span> torch.utils.data <span class="k">import</span> DataLoader, TensorDataset
+
+<span class="c"># ══════════════════════════════════════════════════</span>
+<span class="c"># LINEAR REGRESSION — maps to Part I §2.1</span>
+<span class="c"># ══════════════════════════════════════════════════</span>
+
+<span class="c"># Generate synthetic data: y = 3x₁ - 2x₂ + 1 + noise</span>
+torch.manual_seed(42)
+X = torch.randn(200, 2)
+y = X @ torch.tensor([3.0, -2.0]) + 1.0 + 0.3 * torch.randn(200)
+
+<span class="c"># Model: exactly ŷ = Wx + b (Part I equation)</span>
+model = nn.Linear(2, 1)
+
+<span class="c"># Loss: MSE = MLE under Gaussian noise (Part I §2.1)</span>
+loss_fn = nn.MSELoss()
+optimizer = torch.optim.SGD(model.parameters(), lr=<span class="n">0.05</span>)
+
+<span class="k">for</span> epoch <span class="k">in</span> range(<span class="n">100</span>):
+    y_hat = model(X).squeeze()
+    loss = loss_fn(y_hat, y)
+    
+    optimizer.zero_grad()       <span class="c"># clear old gradients</span>
+    loss.backward()             <span class="c"># compute ∂L/∂W, ∂L/∂b</span>
+    optimizer.step()            <span class="c"># W ← W - η·∇L</span>
+
+print(<span class="s">f"Learned weights: {model.weight.data}"</span>)
+<span class="c"># Should be close to [3.0, -2.0]</span>
+print(<span class="s">f"Learned bias: {model.bias.data}"</span>)
+<span class="c"># Should be close to 1.0</span>
+
+
+<span class="c"># ══════════════════════════════════════════════════</span>
+<span class="c"># LOGISTIC REGRESSION — maps to Part I §2.2</span>
+<span class="c"># ══════════════════════════════════════════════════</span>
+
+<span class="c"># Generate 2-class data</span>
+X_pos = torch.randn(100, 2) + torch.tensor([2.0, 2.0])
+X_neg = torch.randn(100, 2) + torch.tensor([-2.0, -2.0])
+X_cls = torch.cat([X_pos, X_neg])
+y_cls = torch.cat([torch.ones(100), torch.zeros(100)])
+
+model_cls = nn.Sequential(
+    nn.Linear(2, 1),
+    nn.Sigmoid()          <span class="c"># P(y=1|x) = σ(Wx + b)</span>
+)
+
+<span class="c"># Loss: BCE = MLE under Bernoulli (Part I §2.2)</span>
+loss_fn_cls = nn.BCELoss()
+optimizer_cls = torch.optim.SGD(model_cls.parameters(), lr=<span class="n">0.1</span>)
+
+<span class="k">for</span> epoch <span class="k">in</span> range(<span class="n">200</span>):
+    p_hat = model_cls(X_cls).squeeze()
+    loss = loss_fn_cls(p_hat, y_cls)
+    optimizer_cls.zero_grad()
+    loss.backward()
+    optimizer_cls.step()
+
+accuracy = ((p_hat > 0.5).float() == y_cls).float().mean()
+print(<span class="s">f"Accuracy: {accuracy:.1%}"</span>)  <span class="c"># Should be ~99%+</span></pre>
+
+<div class="separator">· · ·</div>
+
+
+<!-- ═══════════════════════ 3 ═══════════════════════ -->
+<div class="part-header" id="s3">
+  <div class="part-label">Implementation 3</div>
+  <h2>MLP with Custom Backpropagation</h2>
+</div>
+
+<p>This implementation computes backprop <em>manually</em> — no autograd — so you can verify every gradient matches Part II's walkthrough.</p>
+
+<pre><span class="k">import</span> numpy <span class="k">as</span> np
+
+<span class="k">class</span> <span class="f">ManualMLP</span>:
+    <span class="s">"""2-layer MLP with manual forward + backward. No frameworks."""</span>
+    
+    <span class="k">def</span> <span class="f">__init__</span>(self, d_in, d_hidden, d_out):
+        <span class="c"># He initialization (Part I §3.1)</span>
+        self.W1 = np.random.randn(d_in, d_hidden) * np.sqrt(2.0 / d_in)
+        self.b1 = np.zeros((1, d_hidden))
+        self.W2 = np.random.randn(d_hidden, d_out) * np.sqrt(2.0 / d_hidden)
+        self.b2 = np.zeros((1, d_out))
+    
+    <span class="k">def</span> <span class="f">forward</span>(self, X):
+        <span class="c"># Cache everything — backprop needs these (Part II §I)</span>
+        self.X = X                                    <span class="c"># (N, d_in)</span>
+        self.z1 = X @ self.W1 + self.b1               <span class="c"># (N, d_hidden)</span>
+        self.a1 = np.maximum(0, self.z1)              <span class="c"># ReLU</span>
+        self.z2 = self.a1 @ self.W2 + self.b2         <span class="c"># (N, d_out)</span>
+        self.a2 = 1 / (1 + np.exp(-self.z2))         <span class="c"># sigmoid</span>
+        <span class="k">return</span> self.a2
+    
+    <span class="k">def</span> <span class="f">backward</span>(self, y):
+        N = y.shape[0]
+        
+        <span class="c"># ── Output layer (Part II §I Step 4-5) ──</span>
+        dz2 = self.a2 - y                             <span class="c"># δ⁽²⁾ = ŷ - y</span>
+        self.dW2 = self.a1.T @ dz2 / N                <span class="c"># ∂L/∂W² = a⁽¹⁾ᵀ · δ⁽²⁾</span>
+        self.db2 = np.mean(dz2, axis=0, keepdims=True)
+        
+        <span class="c"># ── Hidden layer (Part II §I Step 6-7) ──</span>
+        da1 = dz2 @ self.W2.T                         <span class="c"># propagate error back</span>
+        dz1 = da1 * (self.z1 > 0).astype(float)      <span class="c"># ReLU derivative</span>
+        self.dW1 = self.X.T @ dz1 / N                 <span class="c"># ∂L/∂W¹ = xᵀ · δ⁽¹⁾</span>
+        self.db1 = np.mean(dz1, axis=0, keepdims=True)
+    
+    <span class="k">def</span> <span class="f">update</span>(self, lr):
+        self.W2 -= lr * self.dW2;  self.b2 -= lr * self.db2
+        self.W1 -= lr * self.dW1;  self.b1 -= lr * self.db1
+
+<span class="c"># ── Train on MNIST (simplified: 784 → 128 → 10) ──</span>
+<span class="c"># To verify: compare gradients against PyTorch autograd</span>
+net = ManualMLP(784, 128, 10)
+<span class="c"># ... training loop omitted for brevity</span></pre>
+
+<div class="impl">
+  <strong>Verification trick:</strong> Compute gradients both with this manual code and with PyTorch autograd. They should match to ~6 decimal places. If they don't, you have a bug in your derivation.
+<pre><span class="c"># Gradient checking: compare analytical vs numerical gradient</span>
+<span class="k">def</span> <span class="f">numerical_gradient</span>(f, param, eps=1e-5):
+    grad = np.zeros_like(param)
+    <span class="k">for</span> idx <span class="k">in</span> np.ndindex(param.shape):
+        old_val = param[idx]
+        param[idx] = old_val + eps
+        loss_plus = f()
+        param[idx] = old_val - eps
+        loss_minus = f()
+        grad[idx] = (loss_plus - loss_minus) / (2 * eps)
+        param[idx] = old_val
+    <span class="k">return</span> grad</pre>
+</div>
+
+<div class="separator">· · ·</div>
+
+
+<!-- ═══════════════════════ 4 ═══════════════════════ -->
+<div class="part-header" id="s4">
+  <div class="part-label">Implementation 4</div>
+  <h2>CNN for Image Classification</h2>
+</div>
+
+<pre><span class="k">import</span> torch
+<span class="k">import</span> torch.nn <span class="k">as</span> nn
+
+<span class="k">class</span> <span class="f">SimpleCNN</span>(nn.Module):
+    <span class="s">"""
+    LeNet-style CNN (Part I §4.1).
+    Conv → ReLU → Pool → Conv → ReLU → Pool → FC → FC
+    """</span>
+    <span class="k">def</span> <span class="f">__init__</span>(self, num_classes=10):
+        <span class="k">super</span>().__init__()
+        self.features = nn.Sequential(
+            <span class="c"># Conv block 1: detect low-level features (edges, textures)</span>
+            nn.Conv2d(1, 32, kernel_size=3, padding=1),  <span class="c"># (1,28,28)→(32,28,28)</span>
+            nn.ReLU(),
+            nn.MaxPool2d(2),                              <span class="c"># (32,28,28)→(32,14,14)</span>
+            
+            <span class="c"># Conv block 2: detect mid-level features (shapes, parts)</span>
+            nn.Conv2d(32, 64, kernel_size=3, padding=1),  <span class="c"># (32,14,14)→(64,14,14)</span>
+            nn.ReLU(),
+            nn.MaxPool2d(2),                              <span class="c"># (64,14,14)→(64,7,7)</span>
+        )
+        self.classifier = nn.Sequential(
+            nn.Flatten(),                                 <span class="c"># (64,7,7)→(3136)</span>
+            nn.Linear(64 * 7 * 7, 128),
+            nn.ReLU(),
+            nn.Dropout(0.5),                              <span class="c"># regularization (Part II §VII)</span>
+            nn.Linear(128, num_classes),                  <span class="c"># logits (no softmax — inside loss)</span>
+        )
+    
+    <span class="k">def</span> <span class="f">forward</span>(self, x):
+        <span class="k">return</span> self.classifier(self.features(x))
+
+<span class="c"># ── Training on MNIST ──</span>
+<span class="k">from</span> torchvision <span class="k">import</span> datasets, transforms
+<span class="k">from</span> torch.utils.data <span class="k">import</span> DataLoader
+
+transform = transforms.Compose([
+    transforms.ToTensor(),
+    transforms.Normalize((0.1307,), (0.3081,))
+])
+train_data = datasets.MNIST(<span class="s">"./data"</span>, train=<span class="k">True</span>, download=<span class="k">True</span>, transform=transform)
+train_loader = DataLoader(train_data, batch_size=64, shuffle=<span class="k">True</span>)
+
+model = SimpleCNN()
+optimizer = torch.optim.Adam(model.parameters(), lr=<span class="n">1e-3</span>)
+loss_fn = nn.CrossEntropyLoss()   <span class="c"># combines LogSoftmax + NLLLoss</span>
+
+<span class="k">for</span> epoch <span class="k">in</span> range(<span class="n">5</span>):
+    <span class="k">for</span> X_batch, y_batch <span class="k">in</span> train_loader:
+        logits = model(X_batch)
+        loss = loss_fn(logits, y_batch)
+        optimizer.zero_grad()
+        loss.backward()
+        optimizer.step()
+    print(<span class="s">f"Epoch {epoch+1}, Loss: {loss.item():.4f}"</span>)
+<span class="c"># Reaches ~99% accuracy in 5 epochs</span></pre>
+
+<div class="warning">
+  <code>nn.CrossEntropyLoss</code> expects <strong>raw logits</strong>, not probabilities. It applies softmax internally. If you apply softmax yourself and then pass to CrossEntropyLoss, you're doing double-softmax — a common bug that makes training fail silently.
+</div>
+
+<div class="separator">· · ·</div>
+
+
+<!-- ═══════════════════════ 5 ═══════════════════════ -->
+<div class="part-header" id="s5">
+  <div class="part-label">Implementation 5</div>
+  <h2>Character-Level RNN & LSTM Language Model</h2>
+</div>
+
+<pre><span class="k">import</span> torch
+<span class="k">import</span> torch.nn <span class="k">as</span> nn
+
+<span class="k">class</span> <span class="f">CharLSTM</span>(nn.Module):
+    <span class="s">"""
+    Character-level language model (Part I §4.2).
+    Predicts next character given previous characters.
+    """</span>
+    <span class="k">def</span> <span class="f">__init__</span>(self, vocab_size, embed_dim=64, hidden_dim=128):
+        <span class="k">super</span>().__init__()
+        self.embed = nn.Embedding(vocab_size, embed_dim)
+        self.lstm = nn.LSTM(embed_dim, hidden_dim, num_layers=2, 
+                            batch_first=<span class="k">True</span>, dropout=0.2)
+        self.head = nn.Linear(hidden_dim, vocab_size)
+    
+    <span class="k">def</span> <span class="f">forward</span>(self, x, hidden=<span class="k">None</span>):
+        emb = self.embed(x)                     <span class="c"># (B, T) → (B, T, embed_dim)</span>
+        out, hidden = self.lstm(emb, hidden)     <span class="c"># (B, T, hidden_dim)</span>
+        logits = self.head(out)                  <span class="c"># (B, T, vocab_size)</span>
+        <span class="k">return</span> logits, hidden
+
+<span class="c"># ── Generate text ──</span>
+@torch.no_grad()
+<span class="k">def</span> <span class="f">generate</span>(model, start_str, length=200, temperature=0.8):
+    model.eval()
+    chars = [char_to_idx[c] <span class="k">for</span> c <span class="k">in</span> start_str]
+    input_seq = torch.tensor([chars])
+    hidden = <span class="k">None</span>
+    
+    <span class="k">for</span> _ <span class="k">in</span> range(length):
+        logits, hidden = model(input_seq, hidden)
+        <span class="c"># Temperature sampling (Part II §V)</span>
+        probs = torch.softmax(logits[0, -1] / temperature, dim=-1)
+        next_char = torch.multinomial(probs, 1)
+        input_seq = next_char.unsqueeze(0)
+        chars.append(next_char.item())
+    
+    <span class="k">return</span> <span class="s">""</span>.join(idx_to_char[i] <span class="k">for</span> i <span class="k">in</span> chars)</pre>
+
+<div class="separator">· · ·</div>
+
+
+<!-- ═══════════════════════ 6 ═══════════════════════ -->
+<div class="part-header" id="s6">
+  <div class="part-label">Implementation 6</div>
+  <h2>Word2Vec (Skip-Gram with Negative Sampling)</h2>
+</div>
+
+<pre><span class="k">import</span> torch
+<span class="k">import</span> torch.nn <span class="k">as</span> nn
+
+<span class="k">class</span> <span class="f">Word2Vec</span>(nn.Module):
+    <span class="s">"""
+    Skip-gram with negative sampling (Part I §5.1).
+    Maximize: log σ(u_o · v_c) + Σ log σ(-u_neg · v_c)
+    """</span>
+    <span class="k">def</span> <span class="f">__init__</span>(self, vocab_size, embed_dim):
+        <span class="k">super</span>().__init__()
+        self.center_embed = nn.Embedding(vocab_size, embed_dim)   <span class="c"># v_c</span>
+        self.context_embed = nn.Embedding(vocab_size, embed_dim)  <span class="c"># u_o</span>
+        
+        <span class="c"># Initialize small (not zero — need symmetry breaking)</span>
+        nn.init.uniform_(self.center_embed.weight, -0.5/embed_dim, 0.5/embed_dim)
+        nn.init.zeros_(self.context_embed.weight)
+    
+    <span class="k">def</span> <span class="f">forward</span>(self, center, context, negatives):
+        <span class="s">"""
+        center:    (B,)           — center word indices
+        context:   (B,)           — positive context word indices
+        negatives: (B, num_neg)   — negative sample indices
+        """</span>
+        v_c = self.center_embed(center)            <span class="c"># (B, d)</span>
+        u_pos = self.context_embed(context)        <span class="c"># (B, d)</span>
+        u_neg = self.context_embed(negatives)      <span class="c"># (B, num_neg, d)</span>
+        
+        <span class="c"># Positive score: dot product → sigmoid → log</span>
+        pos_score = torch.sum(v_c * u_pos, dim=1)         <span class="c"># (B,)</span>
+        pos_loss = -torch.log(torch.sigmoid(pos_score) + 1e-8)
+        
+        <span class="c"># Negative scores: dot product → sigmoid(-score) → log</span>
+        neg_score = torch.bmm(u_neg, v_c.unsqueeze(2)).squeeze()  <span class="c"># (B, num_neg)</span>
+        neg_loss = -torch.log(torch.sigmoid(-neg_score) + 1e-8).sum(dim=1)
+        
+        <span class="k">return</span> (pos_loss + neg_loss).mean()
+
+<span class="c"># After training, king - man + woman ≈ queen:</span>
+<span class="c"># v = model.center_embed.weight.data</span>
+<span class="c"># result = v[king] - v[man] + v[woman]</span>
+<span class="c"># nearest = cosine_similarity(result, v).argmax()</span></pre>
+
+<div class="separator">· · ·</div>
+
+
+<!-- ═══════════════════════ 7 ═══════════════════════ -->
+<div class="part-header" id="s7">
+  <div class="part-label">Implementation 7</div>
+  <h2>Self-Attention & Multi-Head Attention</h2>
+</div>
+
+<pre><span class="k">import</span> torch
+<span class="k">import</span> torch.nn <span class="k">as</span> nn
+<span class="k">import</span> math
+
+<span class="k">class</span> <span class="f">SelfAttention</span>(nn.Module):
+    <span class="s">"""
+    Scaled dot-product self-attention (Part I §6.1-6.2).
+    Attention(Q,K,V) = softmax(QKᵀ/√d_k)V
+    """</span>
+    <span class="k">def</span> <span class="f">__init__</span>(self, d_model, d_k):
+        <span class="k">super</span>().__init__()
+        self.d_k = d_k
+        self.W_q = nn.Linear(d_model, d_k, bias=<span class="k">False</span>)
+        self.W_k = nn.Linear(d_model, d_k, bias=<span class="k">False</span>)
+        self.W_v = nn.Linear(d_model, d_k, bias=<span class="k">False</span>)
+    
+    <span class="k">def</span> <span class="f">forward</span>(self, x, mask=<span class="k">None</span>):
+        Q = self.W_q(x)                           <span class="c"># (B, T, d_k)</span>
+        K = self.W_k(x)                           <span class="c"># (B, T, d_k)</span>
+        V = self.W_v(x)                           <span class="c"># (B, T, d_k)</span>
+        
+        <span class="c"># Attention scores: QKᵀ / √d_k</span>
+        scores = Q @ K.transpose(-2, -1) / math.sqrt(self.d_k)  <span class="c"># (B, T, T)</span>
+        
+        <span class="c"># Causal mask: prevent attending to future tokens</span>
+        <span class="k">if</span> mask <span class="k">is not None</span>:
+            scores = scores.masked_fill(mask == 0, float(<span class="s">'-inf'</span>))
+        
+        <span class="c"># Softmax → attention weights</span>
+        weights = torch.softmax(scores, dim=-1)    <span class="c"># (B, T, T)</span>
+        
+        <span class="c"># Weighted sum of values</span>
+        <span class="k">return</span> weights @ V                         <span class="c"># (B, T, d_k)</span>
+
+
+<span class="k">class</span> <span class="f">MultiHeadAttention</span>(nn.Module):
+    <span class="s">"""
+    Multi-head attention (Part I §6.3).
+    Run h attention heads in parallel, concatenate, project.
+    """</span>
+    <span class="k">def</span> <span class="f">__init__</span>(self, d_model, n_heads):
+        <span class="k">super</span>().__init__()
+        <span class="k">assert</span> d_model % n_heads == 0
+        self.d_k = d_model // n_heads
+        self.n_heads = n_heads
+        
+        <span class="c"># Single matrix for all heads (more efficient than separate)</span>
+        self.W_qkv = nn.Linear(d_model, 3 * d_model, bias=<span class="k">False</span>)
+        self.W_o = nn.Linear(d_model, d_model, bias=<span class="k">False</span>)
+    
+    <span class="k">def</span> <span class="f">forward</span>(self, x, mask=<span class="k">None</span>):
+        B, T, C = x.shape
+        
+        <span class="c"># Project to Q, K, V all at once</span>
+        qkv = self.W_qkv(x)                                     <span class="c"># (B, T, 3C)</span>
+        Q, K, V = qkv.chunk(3, dim=-1)                           <span class="c"># each (B, T, C)</span>
+        
+        <span class="c"># Reshape: (B, T, C) → (B, n_heads, T, d_k)</span>
+        Q = Q.view(B, T, self.n_heads, self.d_k).transpose(1, 2)
+        K = K.view(B, T, self.n_heads, self.d_k).transpose(1, 2)
+        V = V.view(B, T, self.n_heads, self.d_k).transpose(1, 2)
+        
+        <span class="c"># Scaled dot-product attention per head</span>
+        scores = Q @ K.transpose(-2, -1) / math.sqrt(self.d_k)
+        <span class="k">if</span> mask <span class="k">is not None</span>:
+            scores = scores.masked_fill(mask == 0, float(<span class="s">'-inf'</span>))
+        weights = torch.softmax(scores, dim=-1)
+        out = weights @ V                                        <span class="c"># (B, h, T, d_k)</span>
+        
+        <span class="c"># Concatenate heads: (B, h, T, d_k) → (B, T, C)</span>
+        out = out.transpose(1, 2).contiguous().view(B, T, C)
+        
+        <span class="k">return</span> self.W_o(out)                                     <span class="c"># output projection</span></pre>
+
+<div class="separator">· · ·</div>
+
+
+<!-- ═══════════════════════ 8 ═══════════════════════ -->
+<div class="part-header" id="s8">
+  <div class="part-label">Implementation 8</div>
+  <h2>Complete GPT from Scratch</h2>
+</div>
+
+<p>A minimal but complete decoder-only transformer. Every component maps directly to Part I §6.4 and §7.1.</p>
+
+<pre><span class="k">import</span> torch
+<span class="k">import</span> torch.nn <span class="k">as</span> nn
+<span class="k">import</span> math
+
+<span class="c"># ══════════════════════════════════════════════════════════</span>
+<span class="c"># CONFIG</span>
+<span class="c"># ══════════════════════════════════════════════════════════</span>
+<span class="k">class</span> <span class="f">GPTConfig</span>:
+    vocab_size:  int = 50257
+    block_size:  int = 256       <span class="c"># max sequence length</span>
+    n_layer:     int = 6
+    n_head:      int = 6
+    n_embd:      int = 384
+    dropout:     float = 0.2
+
+<span class="c"># ══════════════════════════════════════════════════════════</span>
+<span class="c"># COMPONENTS</span>
+<span class="c"># ══════════════════════════════════════════════════════════</span>
+
+<span class="k">class</span> <span class="f">CausalSelfAttention</span>(nn.Module):
+    <span class="s">"""Multi-head causal self-attention (Part I §6.3 + §6.4)"""</span>
+    <span class="k">def</span> <span class="f">__init__</span>(self, config):
+        <span class="k">super</span>().__init__()
+        <span class="k">assert</span> config.n_embd % config.n_head == 0
+        self.n_head = config.n_head
+        self.d_k = config.n_embd // config.n_head
+        
+        self.c_attn = nn.Linear(config.n_embd, 3 * config.n_embd)
+        self.c_proj = nn.Linear(config.n_embd, config.n_embd)
+        self.attn_drop = nn.Dropout(config.dropout)
+        self.resid_drop = nn.Dropout(config.dropout)
+        
+        <span class="c"># Causal mask: lower-triangular (Part I §6.4)</span>
+        self.register_buffer(<span class="s">"mask"</span>,
+            torch.tril(torch.ones(config.block_size, config.block_size))
+                 .view(1, 1, config.block_size, config.block_size))
+    
+    <span class="k">def</span> <span class="f">forward</span>(self, x):
+        B, T, C = x.shape
+        
+        q, k, v = self.c_attn(x).split(C, dim=2)
+        q = q.view(B, T, self.n_head, self.d_k).transpose(1, 2)
+        k = k.view(B, T, self.n_head, self.d_k).transpose(1, 2)
+        v = v.view(B, T, self.n_head, self.d_k).transpose(1, 2)
+        
+        <span class="c"># Attention: softmax(QKᵀ/√d_k + mask) V</span>
+        att = (q @ k.transpose(-2, -1)) / math.sqrt(self.d_k)
+        att = att.masked_fill(self.mask[:, :, :T, :T] == 0, float(<span class="s">'-inf'</span>))
+        att = torch.softmax(att, dim=-1)
+        att = self.attn_drop(att)
+        
+        y = (att @ v).transpose(1, 2).contiguous().view(B, T, C)
+        <span class="k">return</span> self.resid_drop(self.c_proj(y))
+
+
+<span class="k">class</span> <span class="f">FeedForward</span>(nn.Module):
+    <span class="s">"""Position-wise FFN (Part I §6.4): d → 4d → d"""</span>
+    <span class="k">def</span> <span class="f">__init__</span>(self, config):
+        <span class="k">super</span>().__init__()
+        self.net = nn.Sequential(
+            nn.Linear(config.n_embd, 4 * config.n_embd),
+            nn.GELU(),                              <span class="c"># modern choice over ReLU</span>
+            nn.Linear(4 * config.n_embd, config.n_embd),
+            nn.Dropout(config.dropout),
+        )
+    <span class="k">def</span> <span class="f">forward</span>(self, x): <span class="k">return</span> self.net(x)
+
+
+<span class="k">class</span> <span class="f">TransformerBlock</span>(nn.Module):
+    <span class="s">"""Pre-norm transformer block (Part II §VII)"""</span>
+    <span class="k">def</span> <span class="f">__init__</span>(self, config):
+        <span class="k">super</span>().__init__()
+        self.ln1 = nn.LayerNorm(config.n_embd)
+        self.attn = CausalSelfAttention(config)
+        self.ln2 = nn.LayerNorm(config.n_embd)
+        self.ffn = FeedForward(config)
+    
+    <span class="k">def</span> <span class="f">forward</span>(self, x):
+        x = x + self.attn(self.ln1(x))             <span class="c"># residual + attention</span>
+        x = x + self.ffn(self.ln2(x))              <span class="c"># residual + FFN</span>
+        <span class="k">return</span> x
+
+
+<span class="c"># ══════════════════════════════════════════════════════════</span>
+<span class="c"># GPT MODEL</span>
+<span class="c"># ══════════════════════════════════════════════════════════</span>
+
+<span class="k">class</span> <span class="f">GPT</span>(nn.Module):
+    <span class="s">"""
+    Full GPT: Embedding + N × TransformerBlock + LM Head
+    Maps to Part I §7.1
+    """</span>
+    <span class="k">def</span> <span class="f">__init__</span>(self, config):
+        <span class="k">super</span>().__init__()
+        self.config = config
+        
+        self.tok_emb = nn.Embedding(config.vocab_size, config.n_embd)
+        self.pos_emb = nn.Embedding(config.block_size, config.n_embd)
+        self.drop = nn.Dropout(config.dropout)
+        
+        self.blocks = nn.Sequential(
+            *[TransformerBlock(config) <span class="k">for</span> _ <span class="k">in</span> range(config.n_layer)]
+        )
+        self.ln_f = nn.LayerNorm(config.n_embd)
+        self.lm_head = nn.Linear(config.n_embd, config.vocab_size, bias=<span class="k">False</span>)
+        
+        <span class="c"># Weight tying: share embedding and output weights (Part I §7.1)</span>
+        self.tok_emb.weight = self.lm_head.weight
+        
+        <span class="c"># Count parameters</span>
+        n_params = sum(p.numel() <span class="k">for</span> p <span class="k">in</span> self.parameters())
+        print(<span class="s">f"GPT model: {n_params/1e6:.1f}M parameters"</span>)
+    
+    <span class="k">def</span> <span class="f">forward</span>(self, idx, targets=<span class="k">None</span>):
+        B, T = idx.shape
+        <span class="k">assert</span> T <= self.config.block_size
+        
+        <span class="c"># Token + position embeddings</span>
+        pos = torch.arange(T, device=idx.device)
+        x = self.drop(self.tok_emb(idx) + self.pos_emb(pos))
+        
+        <span class="c"># Transformer blocks</span>
+        x = self.ln_f(self.blocks(x))
+        
+        <span class="c"># Language model head → logits over vocabulary</span>
+        logits = self.lm_head(x)                    <span class="c"># (B, T, vocab_size)</span>
+        
+        <span class="c"># Compute loss if targets provided</span>
+        loss = <span class="k">None</span>
+        <span class="k">if</span> targets <span class="k">is not None</span>:
+            loss = nn.functional.cross_entropy(
+                logits.view(-1, logits.size(-1)),
+                targets.view(-1)
+            )
+        <span class="k">return</span> logits, loss
+    
+    @torch.no_grad()
+    <span class="k">def</span> <span class="f">generate</span>(self, idx, max_new_tokens, temperature=1.0, top_k=<span class="k">None</span>):
+        <span class="s">"""Autoregressive generation (Part II §V)"""</span>
+        <span class="k">for</span> _ <span class="k">in</span> range(max_new_tokens):
+            <span class="c"># Crop to block_size if necessary</span>
+            idx_cond = idx[:, -self.config.block_size:]
+            logits, _ = self(idx_cond)
+            logits = logits[:, -1, :] / temperature
+            
+            <span class="c"># Top-k filtering</span>
+            <span class="k">if</span> top_k <span class="k">is not None</span>:
+                v, _ = torch.topk(logits, top_k)
+                logits[logits < v[:, [-1]]] = float(<span class="s">'-inf'</span>)
+            
+            probs = torch.softmax(logits, dim=-1)
+            idx_next = torch.multinomial(probs, num_samples=1)
+            idx = torch.cat([idx, idx_next], dim=1)
+        <span class="k">return</span> idx</pre>
+
+<div class="impl">
+  <strong>Parameter count for this config:</strong> With vocab_size=50257, n_embd=384, n_layer=6, n_head=6: approximately <strong>10.6M parameters</strong>. This is a tiny model, but it can learn to generate coherent text on small datasets (Shakespeare, code, etc.). Scale n_layer to 12 and n_embd to 768 for a GPT-2-small-sized model (~124M params).
+</div>
+
+<div class="separator">· · ·</div>
+
+
+<!-- ═══════════════════════ 9 ═══════════════════════ -->
+<div class="part-header" id="s9">
+  <div class="part-label">Implementation 9</div>
+  <h2>Training Loop, Evaluation & Generation</h2>
+</div>
+
+<pre><span class="k">import</span> torch
+<span class="k">from</span> torch.optim <span class="k">import</span> AdamW
+<span class="k">from</span> torch.optim.lr_scheduler <span class="k">import</span> CosineAnnealingLR
+
+<span class="k">def</span> <span class="f">train_gpt</span>(model, train_loader, val_loader, config):
+    device = torch.device(<span class="s">"cuda"</span> <span class="k">if</span> torch.cuda.is_available() <span class="k">else</span> <span class="s">"cpu"</span>)
+    model = model.to(device)
+    
+    <span class="c"># ── Optimizer: AdamW with weight decay (Part II §VIII) ──</span>
+    <span class="c"># Separate params: decay weights, don't decay biases/norms</span>
+    decay_params = [p <span class="k">for</span> n, p <span class="k">in</span> model.named_parameters() 
+                    <span class="k">if</span> p.dim() >= 2]
+    no_decay_params = [p <span class="k">for</span> n, p <span class="k">in</span> model.named_parameters() 
+                       <span class="k">if</span> p.dim() < 2]
+    optim_groups = [
+        {<span class="s">"params"</span>: decay_params, <span class="s">"weight_decay"</span>: <span class="n">0.1</span>},
+        {<span class="s">"params"</span>: no_decay_params, <span class="s">"weight_decay"</span>: <span class="n">0.0</span>},
+    ]
+    optimizer = AdamW(optim_groups, lr=<span class="n">3e-4</span>, betas=(<span class="n">0.9</span>, <span class="n">0.999</span>))
+    
+    <span class="c"># ── LR Schedule: warmup + cosine decay (Part II §VIII) ──</span>
+    total_steps = len(train_loader) * config.epochs
+    warmup_steps = int(0.05 * total_steps)
+    
+    <span class="k">def</span> <span class="f">lr_lambda</span>(step):
+        <span class="k">if</span> step < warmup_steps:
+            <span class="k">return</span> step / warmup_steps
+        progress = (step - warmup_steps) / (total_steps - warmup_steps)
+        <span class="k">return</span> 0.5 * (1 + math.cos(math.pi * progress))
+    
+    scheduler = torch.optim.lr_scheduler.LambdaLR(optimizer, lr_lambda)
+    
+    <span class="c"># ── Training loop ──</span>
+    <span class="k">for</span> epoch <span class="k">in</span> range(config.epochs):
+        model.train()
+        total_loss = 0
+        
+        <span class="k">for</span> batch_idx, (x, y) <span class="k">in</span> enumerate(train_loader):
+            x, y = x.to(device), y.to(device)
+            
+            logits, loss = model(x, targets=y)
+            
+            <span class="c"># Gradient accumulation for effective larger batch</span>
+            loss = loss / config.grad_accum_steps
+            loss.backward()
+            
+            <span class="k">if</span> (batch_idx + 1) % config.grad_accum_steps == 0:
+                <span class="c"># Gradient clipping (prevents exploding gradients)</span>
+                torch.nn.utils.clip_grad_norm_(model.parameters(), <span class="n">1.0</span>)
+                optimizer.step()
+                scheduler.step()
+                optimizer.zero_grad()
+            
+            total_loss += loss.item() * config.grad_accum_steps
+        
+        <span class="c"># ── Validation ──</span>
+        val_loss = evaluate(model, val_loader, device)
+        ppl = math.exp(val_loss)                    <span class="c"># perplexity (Part III §VII)</span>
+        print(<span class="s">f"Epoch {epoch+1} | Train loss: {total_loss/len(train_loader):.4f}"</span>
+              <span class="s">f" | Val loss: {val_loss:.4f} | Val PPL: {ppl:.1f}"</span>)
+
+@torch.no_grad()
+<span class="k">def</span> <span class="f">evaluate</span>(model, val_loader, device):
+    model.eval()
+    total_loss, total_tokens = 0, 0
+    <span class="k">for</span> x, y <span class="k">in</span> val_loader:
+        x, y = x.to(device), y.to(device)
+        _, loss = model(x, targets=y)
+        total_loss += loss.item() * y.numel()
+        total_tokens += y.numel()
+    <span class="k">return</span> total_loss / total_tokens</pre>
+
+<div class="separator">· · ·</div>
+
+
+<!-- ═══════════════════════ 10 ═══════════════════════ -->
+<div class="part-header" id="s10">
+  <div class="part-label">Implementation 10</div>
+  <h2>LoRA Fine-Tuning</h2>
+</div>
+
+<pre><span class="k">import</span> torch
+<span class="k">import</span> torch.nn <span class="k">as</span> nn
+
+<span class="k">class</span> <span class="f">LoRALinear</span>(nn.Module):
+    <span class="s">"""
+    LoRA adapter (Part III §II).
+    W_new = W_frozen + (α/r) · B @ A
+    
+    Only B and A are trainable — base weights are frozen.
+    """</span>
+    <span class="k">def</span> <span class="f">__init__</span>(self, base_layer: nn.Linear, r: int = 8, alpha: float = 16.0):
+        <span class="k">super</span>().__init__()
+        self.base = base_layer
+        self.r = r
+        self.alpha = alpha
+        d_in, d_out = base_layer.in_features, base_layer.out_features
+        
+        <span class="c"># LoRA matrices</span>
+        self.A = nn.Parameter(torch.randn(d_in, r) * 0.01)    <span class="c"># Gaussian init</span>
+        self.B = nn.Parameter(torch.zeros(r, d_out))           <span class="c"># Zero init → ΔW=0 at start</span>
+        
+        <span class="c"># Freeze base weights</span>
+        self.base.weight.requires_grad = <span class="k">False</span>
+        <span class="k">if</span> self.base.bias <span class="k">is not None</span>:
+            self.base.bias.requires_grad = <span class="k">False</span>
+    
+    <span class="k">def</span> <span class="f">forward</span>(self, x):
+        <span class="c"># h = W₀x + (α/r) · B(Ax)   [Part III §II equation]</span>
+        base_out = self.base(x)
+        lora_out = (x @ self.A) @ self.B * (self.alpha / self.r)
+        <span class="k">return</span> base_out + lora_out
+    
+    <span class="k">def</span> <span class="f">merge</span>(self):
+        <span class="s">"""Merge LoRA weights into base for zero-cost inference."""</span>
+        self.base.weight.data += (self.alpha / self.r) * (self.A @ self.B).T
+
+
+<span class="k">def</span> <span class="f">apply_lora</span>(model, r=8, alpha=16.0, target_modules=[<span class="s">"c_attn"</span>, <span class="s">"c_proj"</span>]):
+    <span class="s">"""Replace target Linear layers with LoRA-wrapped versions."""</span>
+    <span class="k">for</span> name, module <span class="k">in</span> model.named_modules():
+        <span class="k">for</span> target <span class="k">in</span> target_modules:
+            <span class="k">if</span> hasattr(module, target):
+                original = getattr(module, target)
+                <span class="k">if</span> isinstance(original, nn.Linear):
+                    setattr(module, target, LoRALinear(original, r, alpha))
+    
+    <span class="c"># Freeze all non-LoRA parameters</span>
+    <span class="k">for</span> name, param <span class="k">in</span> model.named_parameters():
+        <span class="k">if</span> <span class="s">"lora"</span> <span class="k">not in</span> name.lower() <span class="k">and</span> <span class="s">".A"</span> <span class="k">not in</span> name <span class="k">and</span> <span class="s">".B"</span> <span class="k">not in</span> name:
+            param.requires_grad = <span class="k">False</span>
+    
+    trainable = sum(p.numel() <span class="k">for</span> p <span class="k">in</span> model.parameters() <span class="k">if</span> p.requires_grad)
+    total = sum(p.numel() <span class="k">for</span> p <span class="k">in</span> model.parameters())
+    print(<span class="s">f"LoRA: {trainable:,} trainable / {total:,} total ({100*trainable/total:.2f}%)"</span>)
+
+<span class="c"># Usage:</span>
+<span class="c"># model = GPT(config)</span>
+<span class="c"># model.load_state_dict(pretrained_weights)  # load base model</span>
+<span class="c"># apply_lora(model, r=16, alpha=32)</span>
+<span class="c"># # Now train normally — only LoRA params update</span></pre>
+
+<div class="exercise">
+  <strong>(a)</strong> Train the GPT model above on the tiny Shakespeare dataset (available via <code>datasets</code> library). Generate 500 characters and evaluate the perplexity.<br>
+  <strong>(b)</strong> Add LoRA to the trained model and fine-tune it on a different text corpus (e.g., Python code). Compare generation quality before and after LoRA.<br>
+  <strong>(c)</strong> Implement gradient accumulation with effective batch size 64 using actual batch size 8. Verify that the loss curve matches training with batch size 64.
+</div>
+
+<div style="text-align:center;padding:3rem 0;color:var(--text-secondary);font-family:'Source Sans 3',sans-serif;font-size:0.9rem;">
+  <em>Every line of code here corresponds to an equation in Parts I–III.<br>
+  The gap between math and code is smaller than you think.</em>
+</div>
+
+</div>
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+  renderMathInElement(document.body, { delimiters: [{left:"$$",right:"$$",display:true},{left:"\\(",right:"\\)",display:false}], throwOnError:false });
+});
+</script>
+</body>
+</html>
